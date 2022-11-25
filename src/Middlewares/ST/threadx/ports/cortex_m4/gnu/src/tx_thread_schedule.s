@@ -20,24 +20,24 @@
 /**************************************************************************/
 /**************************************************************************/
 
-    EXTERN  _tx_thread_current_ptr
-    EXTERN  _tx_thread_execute_ptr
-    EXTERN  _tx_timer_time_slice
-    EXTERN  _tx_thread_preempt_disable
-    EXTERN  _tx_execution_thread_enter
-    EXTERN  _tx_execution_thread_exit
+    .global _tx_thread_current_ptr
+    .global _tx_thread_execute_ptr
+    .global _tx_timer_time_slice
+    .global _tx_execution_thread_enter
+    .global _tx_execution_thread_exit
 #ifdef TX_LOW_POWER
-    EXTERN  tx_low_power_enter
-    EXTERN  tx_low_power_exit
+    .global tx_low_power_enter
+    .global tx_low_power_exit
 #endif
-    SECTION `.text`:CODE:NOROOT(2)
-    THUMB
+    .text
+    .align 4
+    .syntax unified
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
 /*                                                                        */
-/*    _tx_thread_schedule                              Cortex-M4/IAR      */
-/*                                                           6.1.7        */
+/*    _tx_thread_schedule                              Cortex-M4/GNU      */
+/*                                                           6.1.11       */
 /*  AUTHOR                                                                */
 /*                                                                        */
 /*    Scott Larson, Microsoft Corporation                                 */
@@ -64,18 +64,22 @@
 /*                                                                        */
 /*    _tx_initialize_kernel_enter          ThreadX entry function         */
 /*    _tx_thread_system_return             Return to system from thread   */
-/*    _tx_thread_context_restore           Restore thread's context       */
 /*                                                                        */
 /*  RELEASE HISTORY                                                       */
 /*                                                                        */
 /*    DATE              NAME                      DESCRIPTION             */
 /*                                                                        */
 /*  06-02-2021      Scott Larson            Initial Version 6.1.7         */
+/*  01-31-2022      Scott Larson            Fixed predefined macro name,  */
+/*                                            resulting in version 6.1.10 */
+/*  04-25-2022      Scott Larson            Added BASEPRI support,        */
+/*                                            resulting in version 6.1.11 */
 /*                                                                        */
 /**************************************************************************/
 // VOID   _tx_thread_schedule(VOID)
 // {
-    PUBLIC  _tx_thread_schedule
+    .global  _tx_thread_schedule
+    .thumb_func
 _tx_thread_schedule:
 
     /* This function should only ever be called on Cortex-M
@@ -90,7 +94,7 @@ _tx_thread_schedule:
 
     /* Clear CONTROL.FPCA bit so VFP registers aren't unnecessarily stacked.  */
 
-#ifdef __ARMVFP__
+#ifdef __ARM_FP
     MRS     r0, CONTROL                             // Pickup current CONTROL register
     BIC     r0, r0, #4                              // Clear the FPCA bit
     MSR     CONTROL, r0                             // Setup new CONTROL register
@@ -115,9 +119,12 @@ __tx_wait_here:
 
     /* Generic context switching PendSV handler.  */
 
-    PUBLIC  PendSV_Handler
-    PUBLIC  __tx_PendSVHandler
+    .global  PendSV_Handler
+    .global  __tx_PendSVHandler
+    .syntax unified
+    .thumb_func
 PendSV_Handler:
+    .thumb_func
 __tx_PendSVHandler:
 
     /* Get current thread value and new thread pointer.  */
@@ -126,12 +133,22 @@ __tx_ts_handler:
 
 #if (defined(TX_ENABLE_EXECUTION_CHANGE_NOTIFY) || defined(TX_EXECUTION_PROFILE_ENABLE))
     /* Call the thread exit function to indicate the thread is no longer executing.  */
+#ifdef TX_PORT_USE_BASEPRI
+    LDR     r1, =TX_PORT_BASEPRI                    // Mask interrupt priorities =< TX_PORT_BASEPRI
+    MSR     BASEPRI, r1
+#else
     CPSID   i                                       // Disable interrupts
+#endif  /* TX_PORT_USE_BASEPRI */
     PUSH    {r0, lr}                                // Save LR (and r0 just for alignment)
     BL      _tx_execution_thread_exit               // Call the thread exit function
     POP     {r0, lr}                                // Recover LR
+#ifdef TX_PORT_USE_BASEPRI
+    MOV     r0, 0                                   // Disable BASEPRI masking (enable interrupts)
+    MSR     BASEPRI, r0
+#else
     CPSIE   i                                       // Enable interrupts
-#endif
+#endif  /* TX_PORT_USE_BASEPRI */
+#endif  /* EXECUTION PROFILE */
 
     LDR     r0, =_tx_thread_current_ptr             // Build current thread pointer address
     LDR     r2, =_tx_thread_execute_ptr             // Build execute thread pointer address
@@ -147,7 +164,7 @@ __tx_ts_handler:
     STR     r3, [r0]                                // Set _tx_thread_current_ptr to NULL
     MRS     r12, PSP                                // Pickup PSP pointer (thread's stack pointer)
     STMDB   r12!, {r4-r11}                          // Save its remaining registers
-#ifdef __ARMVFP__
+#ifdef __ARM_FP
     TST     LR, #0x10                               // Determine if the VFP extended frame is present
     BNE     _skip_vfp_save
     VSTMDB  r12!,{s16-s31}                          // Yes, save additional VFP registers
@@ -176,14 +193,24 @@ __tx_ts_new:
 
     /* Now we are looking for a new thread to execute!  */
 
+#ifdef TX_PORT_USE_BASEPRI
+    LDR     r1, =TX_PORT_BASEPRI                    // Mask interrupt priorities =< TX_PORT_BASEPRI
+    MSR     BASEPRI, r1
+#else
     CPSID   i                                       // Disable interrupts
+#endif
     LDR     r1, [r2]                                // Is there another thread ready to execute?
     CBZ     r1, __tx_ts_wait                        // No, skip to the wait processing
 
     /* Yes, another thread is ready for else, make the current thread the new thread.  */
 
     STR     r1, [r0]                                // Setup the current thread pointer to the new thread
+#ifdef TX_PORT_USE_BASEPRI
+    MOV     r4, #0                                  // Disable BASEPRI masking (enable interrupts)
+    MSR     BASEPRI, r4
+#else
     CPSIE   i                                       // Enable interrupts
+#endif
 
     /* Increment the thread run count.  */
 
@@ -209,7 +236,7 @@ __tx_ts_restore:
 
     LDR     r12, [r1, #8]                           // Pickup thread's stack pointer
     LDMIA   r12!, {LR}                              // Pickup LR
-#ifdef __ARMVFP__
+#ifdef __ARM_FP
     TST     LR, #0x10                               // Determine if the VFP extended frame is present
     BNE     _skip_vfp_restore                       // If not, skip VFP restore
     VLDMIA  r12!, {s16-s31}                         // Yes, restore additional VFP registers
@@ -227,7 +254,12 @@ _skip_vfp_restore:
        are disabled to allow use of WFI for waiting for a thread to arrive.  */
 
 __tx_ts_wait:
+#ifdef TX_PORT_USE_BASEPRI
+    LDR     r1, =TX_PORT_BASEPRI                    // Mask interrupt priorities =< TX_PORT_BASEPRI
+    MSR     BASEPRI, r1
+#else
     CPSID   i                                       // Disable interrupts
+#endif
     LDR     r1, [r2]                                // Pickup the next thread to execute pointer
     STR     r1, [r0]                                // Store it in the current pointer
     CBNZ    r1, __tx_ts_ready                       // If non-NULL, a new thread is ready!
@@ -250,7 +282,12 @@ __tx_ts_wait:
     POP     {r0-r3}
 #endif
 
+#ifdef TX_PORT_USE_BASEPRI
+    MOV     r4, #0                                  // Disable BASEPRI masking (enable interrupts)
+    MSR     BASEPRI, r4
+#else
     CPSIE   i                                       // Enable interrupts
+#endif
     B       __tx_ts_wait                            // Loop to continue waiting
 
     /* At this point, we have a new thread ready to go. Clear any newly pended PendSV - since we are
@@ -262,16 +299,22 @@ __tx_ts_ready:
     STR     r7, [r8, #0xD04]                        // Clear any PendSV
 
     /* Re-enable interrupts and restore new thread.  */
-
+#ifdef TX_PORT_USE_BASEPRI
+    MOV     r4, #0                                  // Disable BASEPRI masking (enable interrupts)
+    MSR     BASEPRI, r4
+#else
     CPSIE   i                                       // Enable interrupts
+#endif
     B       __tx_ts_restore                         // Restore the thread
 // }
 
-#ifdef __ARMVFP__
+#ifdef __ARM_FP
 
-    PUBLIC  tx_thread_fpu_enable
+    .global  tx_thread_fpu_enable
+    .thumb_func
 tx_thread_fpu_enable:
-    PUBLIC  tx_thread_fpu_disable
+    .global  tx_thread_fpu_disable
+    .thumb_func
 tx_thread_fpu_disable:
 
     /* Automatic VPF logic is supported, this function is present only for
@@ -280,4 +323,3 @@ tx_thread_fpu_disable:
     BX      LR                                      // Return to caller
 
 #endif
-    END

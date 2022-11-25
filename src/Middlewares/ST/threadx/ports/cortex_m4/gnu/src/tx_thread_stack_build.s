@@ -20,13 +20,14 @@
 /**************************************************************************/
 /**************************************************************************/
 
-    SECTION `.text`:CODE:NOROOT(2)
-    THUMB
+    .text
+    .align 4
+    .syntax unified
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
 /*                                                                        */
-/*    _tx_thread_stack_build                           Cortex-M4/IAR      */
+/*    _tx_thread_stack_build                           Cortex-M4/GNU      */
 /*                                                           6.1.7        */
 /*  AUTHOR                                                                */
 /*                                                                        */
@@ -64,7 +65,8 @@
 /**************************************************************************/
 // VOID   _tx_thread_stack_build(TX_THREAD *thread_ptr, VOID (*function_ptr)(VOID))
 // {
-    PUBLIC  _tx_thread_stack_build
+    .global  _tx_thread_stack_build
+    .thumb_func
 _tx_thread_stack_build:
 
     /* Build a fake interrupt frame.  The form of the fake interrupt stack
@@ -129,4 +131,3 @@ _tx_thread_stack_build:
                                                     //   control block
     BX      lr                                      // Return to caller
 // }
-    END

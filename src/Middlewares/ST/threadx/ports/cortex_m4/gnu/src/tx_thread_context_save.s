@@ -20,13 +20,14 @@
 /**************************************************************************/
 /**************************************************************************/
 
-    SECTION `.text`:CODE:NOROOT(2)
-    THUMB
+    .text
+    .align 4
+    .syntax unified
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
 /*                                                                        */
-/*    _tx_thread_interrupt_control                     Cortex-M4/IAR      */
+/*    _tx_thread_context_save                          Cortex-M4/GNU      */
 /*                                                           6.1.7        */
 /*  AUTHOR                                                                */
 /*                                                                        */
@@ -34,24 +35,24 @@
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
-/*    This function is responsible for changing the interrupt lockout     */
-/*    posture of the system.                                              */
+/*    This function is only needed for legacy applications and it should  */
+/*    not be called in any new development on a Cortex-M.                 */
 /*                                                                        */
 /*  INPUT                                                                 */
 /*                                                                        */
-/*    new_posture                           New interrupt lockout posture */
+/*    None                                                                */
 /*                                                                        */
 /*  OUTPUT                                                                */
 /*                                                                        */
-/*    old_posture                           Old interrupt lockout posture */
+/*    None                                                                */
 /*                                                                        */
 /*  CALLS                                                                 */
 /*                                                                        */
-/*    None                                                                */
+/*    [_tx_execution_isr_enter]             Execution profiling ISR enter */
 /*                                                                        */
 /*  CALLED BY                                                             */
 /*                                                                        */
-/*    Application Code                                                    */
+/*    ISRs                                                                */
 /*                                                                        */
 /*  RELEASE HISTORY                                                       */
 /*                                                                        */
@@ -60,19 +61,20 @@
 /*  06-02-2021      Scott Larson            Initial Version 6.1.7         */
 /*                                                                        */
 /**************************************************************************/
-// UINT   _tx_thread_interrupt_control(UINT new_posture)
+// VOID   _tx_thread_context_save(VOID)
 // {
-    PUBLIC  _tx_thread_interrupt_control
-_tx_thread_interrupt_control:
-#ifdef TX_PORT_USE_BASEPRI
-    MRS     r1, BASEPRI                         // Pickup current interrupt posture
-    MSR     BASEPRI, r0                         // Apply the new interrupt posture
-    MOV     r0, r1                              // Transfer old to return register
-#else
-    MRS     r1, PRIMASK                         // Pickup current interrupt lockout
-    MSR     PRIMASK, r0                         // Apply the new interrupt lockout
-    MOV     r0, r1                              // Transfer old to return register
+    .global  _tx_thread_context_save
+    .thumb_func
+_tx_thread_context_save:
+
+#if (defined(TX_ENABLE_EXECUTION_CHANGE_NOTIFY) || defined(TX_EXECUTION_PROFILE_ENABLE))
+    /* Call the ISR enter function to indicate an ISR is starting.  */
+    PUSH    {r0, lr}                                // Save return address
+    BL      _tx_execution_isr_enter                 // Call the ISR enter function
+    POP     {r0, lr}                                // Recover return address
 #endif
-    BX      lr                                  // Return to caller
+
+    /* Context is already saved - just return.  */
+
+    BX      lr
 // }
-    END

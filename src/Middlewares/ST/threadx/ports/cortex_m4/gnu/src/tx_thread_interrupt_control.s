@@ -20,14 +20,14 @@
 /**************************************************************************/
 /**************************************************************************/
 
-    EXTERN  _tx_execution_isr_exit
-    SECTION `.text`:CODE:NOROOT(2)
-    THUMB
+    .text 32
+    .align 4
+    .syntax unified
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
 /*                                                                        */
-/*    _tx_thread_context_restore                       Cortex-M4/IAR      */
+/*    _tx_thread_interrupt_control                     Cortex-M4/GNU      */
 /*                                                           6.1.7        */
 /*  AUTHOR                                                                */
 /*                                                                        */
@@ -35,24 +35,24 @@
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
-/*    This function is only needed for legacy applications and it should  */
-/*    not be called in any new development on a Cortex-M.                 */
+/*    This function is responsible for changing the interrupt lockout     */
+/*    posture of the system.                                              */
 /*                                                                        */
 /*  INPUT                                                                 */
 /*                                                                        */
-/*    None                                                                */
+/*    new_posture                           New interrupt lockout posture */
 /*                                                                        */
 /*  OUTPUT                                                                */
 /*                                                                        */
-/*    None                                                                */
+/*    old_posture                           Old interrupt lockout posture */
 /*                                                                        */
 /*  CALLS                                                                 */
 /*                                                                        */
-/*    [_tx_execution_isr_exit]              Execution profiling ISR exit  */
+/*    None                                                                */
 /*                                                                        */
 /*  CALLED BY                                                             */
 /*                                                                        */
-/*    ISRs                                  Interrupt Service Routines    */
+/*    Application Code                                                    */
 /*                                                                        */
 /*  RELEASE HISTORY                                                       */
 /*                                                                        */
@@ -61,18 +61,19 @@
 /*  06-02-2021      Scott Larson            Initial Version 6.1.7         */
 /*                                                                        */
 /**************************************************************************/
-// VOID   _tx_thread_context_restore(VOID)
+// UINT   _tx_thread_interrupt_control(UINT new_posture)
 // {
-    PUBLIC  _tx_thread_context_restore
-_tx_thread_context_restore:
-
-#if (defined(TX_ENABLE_EXECUTION_CHANGE_NOTIFY) || defined(TX_EXECUTION_PROFILE_ENABLE))
-    /* Call the ISR exit function to indicate an ISR is complete.  */
-    PUSH    {r0, lr}                                // Save return address
-    BL      _tx_execution_isr_exit                  // Call the ISR exit function
-    POP     {r0, lr}                                // Recover return address
+    .global  _tx_thread_interrupt_control
+    .thumb_func
+_tx_thread_interrupt_control:
+#ifdef TX_PORT_USE_BASEPRI
+    MRS     r1, BASEPRI                         // Pickup current interrupt posture
+    MSR     BASEPRI, r0                         // Apply the new interrupt posture
+    MOV     r0, r1                              // Transfer old to return register
+#else
+    MRS     r1, PRIMASK                         // Pickup current interrupt lockout
+    MSR     PRIMASK, r0                         // Apply the new interrupt lockout
+    MOV     r0, r1                              // Transfer old to return register
 #endif
-
-    BX      lr
+    BX      lr                                  // Return to caller
 // }
-    END

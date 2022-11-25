@@ -20,26 +20,24 @@
 /**************************************************************************/
 /**************************************************************************/
 
-    EXTERN      _tx_timer_time_slice
-    EXTERN      _tx_timer_system_clock
-    EXTERN      _tx_timer_current_ptr
-    EXTERN      _tx_timer_list_start
-    EXTERN      _tx_timer_list_end
-    EXTERN      _tx_timer_expired_time_slice
-    EXTERN      _tx_timer_expired
-    EXTERN      _tx_thread_time_slice
-    EXTERN      _tx_timer_expiration_process
-    EXTERN      _tx_thread_current_ptr
-    EXTERN      _tx_thread_execute_ptr
-    EXTERN      _tx_thread_preempt_disable
+    .global _tx_timer_time_slice
+    .global _tx_timer_system_clock
+    .global _tx_timer_current_ptr
+    .global _tx_timer_list_start
+    .global _tx_timer_list_end
+    .global _tx_timer_expired_time_slice
+    .global _tx_timer_expired
+    .global _tx_thread_time_slice
+    .global _tx_timer_expiration_process
 
-    SECTION `.text`:CODE:NOROOT(2)
-    THUMB
+    .text
+    .align 4
+    .syntax unified
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
 /*                                                                        */
-/*    _tx_timer_interrupt                              Cortex-M4/IAR      */
+/*    _tx_timer_interrupt                              Cortex-M4/GNU      */
 /*                                                           6.1.10       */
 /*  AUTHOR                                                                */
 /*                                                                        */
@@ -82,7 +80,8 @@
 // VOID   _tx_timer_interrupt(VOID)
 // {
 #ifndef TX_NO_TIMER
-    PUBLIC  _tx_timer_interrupt
+    .global  _tx_timer_interrupt
+    .thumb_func
 _tx_timer_interrupt:
 
     /* Upon entry to this routine, it is assumed that the compiler scratch registers are available
@@ -254,4 +253,3 @@ __tx_timer_nothing_expired:
     BX      lr                                      // Return to caller
 // }
 #endif
-    END
