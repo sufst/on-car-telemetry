@@ -68,7 +68,6 @@ Core/Src/system_stm32f4xx.c \
 Middlewares/ST/threadx/common/src/tx_initialize_high_level.c \
 Middlewares/ST/threadx/common/src/tx_initialize_kernel_enter.c \
 Middlewares/ST/threadx/common/src/tx_initialize_kernel_setup.c \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_iar.c \
 Middlewares/ST/threadx/common/src/tx_block_allocate.c \
 Middlewares/ST/threadx/common/src/tx_block_pool_cleanup.c \
 Middlewares/ST/threadx/common/src/tx_block_pool_create.c \
@@ -239,15 +238,13 @@ Middlewares/ST/threadx/common/src/tx_trace_user_event_insert.c
 ASM_SOURCES =  \
 startup_stm32f446xx.s \
 Core/Src/tx_initialize_low_level.s \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_thread_context_restore.s \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_thread_context_save.s \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_thread_interrupt_control.s \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_thread_interrupt_disable.s \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_thread_interrupt_restore.s \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_thread_schedule.s \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_thread_stack_build.s \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_thread_system_return.s \
-Middlewares/ST/threadx/ports/cortex_m4/iar/src/tx_timer_interrupt.s
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_context_restore.s \
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_context_save.s \
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_interrupt_control.s \
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_schedule.s \
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_stack_build.s \
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_system_return.s \
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_timer_interrupt.s
 
 
 #######################################
@@ -308,7 +305,7 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
 -IMiddlewares/ST/threadx/common/inc/ \
--IMiddlewares/ST/threadx/ports/cortex_m4/iar/inc/
+-IMiddlewares/ST/threadx/ports/cortex_m4/gnu/inc/
 
 
 # compile gcc flags

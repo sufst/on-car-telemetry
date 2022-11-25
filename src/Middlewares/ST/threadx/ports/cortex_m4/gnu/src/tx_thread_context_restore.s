@@ -20,13 +20,18 @@
 /**************************************************************************/
 /**************************************************************************/
 
-    SECTION `.text`:CODE:NOROOT(2)
-    THUMB
+#if (defined(TX_ENABLE_EXECUTION_CHANGE_NOTIFY) || defined(TX_EXECUTION_PROFILE_ENABLE))
+    .global  _tx_execution_isr_exit
+#endif
+
+    .text
+    .align 4
+    .syntax unified
 /**************************************************************************/
 /*                                                                        */
 /*  FUNCTION                                               RELEASE        */
 /*                                                                        */
-/*    _tx_thread_interrupt_disable                     Cortex-M4/IAR      */
+/*    _tx_thread_context_restore                       Cortex-M4/GNU      */
 /*                                                           6.1.7        */
 /*  AUTHOR                                                                */
 /*                                                                        */
@@ -34,8 +39,8 @@
 /*                                                                        */
 /*  DESCRIPTION                                                           */
 /*                                                                        */
-/*    This function is responsible for disabling interrupts and returning */
-/*    the previous interrupt lockout posture.                             */
+/*    This function is only needed for legacy applications and it should  */
+/*    not be called in any new development on a Cortex-M.                 */
 /*                                                                        */
 /*  INPUT                                                                 */
 /*                                                                        */
@@ -43,15 +48,15 @@
 /*                                                                        */
 /*  OUTPUT                                                                */
 /*                                                                        */
-/*    old_posture                           Old interrupt lockout posture */
+/*    None                                                                */
 /*                                                                        */
 /*  CALLS                                                                 */
 /*                                                                        */
-/*    None                                                                */
+/*    [_tx_execution_isr_exit]              Execution profiling ISR exit  */
 /*                                                                        */
 /*  CALLED BY                                                             */
 /*                                                                        */
-/*    Application Code                                                    */
+/*    ISRs                                  Interrupt Service Routines    */
 /*                                                                        */
 /*  RELEASE HISTORY                                                       */
 /*                                                                        */
@@ -60,19 +65,18 @@
 /*  06-02-2021      Scott Larson            Initial Version 6.1.7         */
 /*                                                                        */
 /**************************************************************************/
-// UINT   _tx_thread_interrupt_disable(VOID)
+// VOID   _tx_thread_context_restore(VOID)
 // {
-    PUBLIC  _tx_thread_interrupt_disable
-_tx_thread_interrupt_disable:
-    /* Return current interrupt lockout posture.  */
-#ifdef TX_PORT_USE_BASEPRI
-    MRS     r0, BASEPRI
-    LDR     r1, =TX_PORT_BASEPRI
-    MSR     BASEPRI, r1
-#else
-    MRS     r0, PRIMASK
-    CPSID   i
+    .global  _tx_thread_context_restore
+    .thumb_func
+_tx_thread_context_restore:
+
+#if (defined(TX_ENABLE_EXECUTION_CHANGE_NOTIFY) || defined(TX_EXECUTION_PROFILE_ENABLE))
+    /* Call the ISR exit function to indicate an ISR is complete.  */
+    PUSH    {r0, lr}                                // Save return address
+    BL      _tx_execution_isr_exit                  // Call the ISR exit function
+    POP     {r0, lr}                                // Recover return address
 #endif
+
     BX      lr
 // }
-    END
