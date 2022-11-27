@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "gpio.h": "c"
+    },
+    "cortex-debug.variableUseNaturalFormat": false
+}
