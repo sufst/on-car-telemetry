@@ -46,6 +46,7 @@ Core/Src/stm32f4xx_it.c \
 Core/Src/stm32f4xx_hal_msp.c \
 Core/Src/stm32f4xx_hal_timebase_tim.c \
 AZURE_RTOS/App/app_azure_rtos.c \
+SUSFT/Src/blink_thread.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c \
 Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c \
@@ -300,6 +301,7 @@ AS_INCLUDES =
 C_INCLUDES =  \
 -ICore/Inc \
 -IAZURE_RTOS/App \
+-ISUSFT/Inc \
 -IDrivers/STM32F4xx_HAL_Driver/Inc \
 -IDrivers/STM32F4xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
@@ -371,7 +373,13 @@ $(BUILD_DIR):
 #######################################
 clean:
 	-rm -fR $(BUILD_DIR)
-  
+	
+#######################################
+# flash
+#######################################
+
+flash: $(BUILD_DIR)/$(TARGET).bin
+	st-flash write $< 0x08000000  
 #######################################
 # dependencies
 #######################################

@@ -223,7 +223,7 @@
 
 /* Define the common timer tick reference for use by other middleware components. */
 
-/*#define TX_TIMER_TICKS_PER_SECOND                100*/
+#define TX_TIMER_TICKS_PER_SECOND                100
 
 /* Determinate if the basic alignment type is defined. */
 
