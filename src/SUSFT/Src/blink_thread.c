@@ -14,7 +14,6 @@ static TX_THREAD blink_thread;
  * function prototypes
  */
 static void blink_thread_entry(ULONG thread_input);
-void App_Delay(uint32_t Delay);
 
 /**
  * @brief 		Creates the blink thread
@@ -66,22 +65,9 @@ void blink_thread_entry(ULONG thread_input)
   /* Infinite loop */
   while(1)
   {	
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_9);
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    /* Delay for 500ms (App_Delay is used to avoid context change). */
-    tx_thread_sleep(100);
-//   App_Delay(5000);
+	HAL_GPIO_TogglePin(USER_LED_GPIO_Port, USER_LED_Pin);
+    /* Delay for 1000ms */
+  tx_thread_sleep(100);
   }
 
-}
-
-/**
-  * @brief  Application Delay function.
-  * @param  Delay : number of ticks to wait
-  * @retval None
-  */
-void App_Delay(uint32_t Delay)
-{
-  UINT initial_time = tx_time_get();
-  while ((tx_time_get() - initial_time) < Delay);
 }
