@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "spi.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -61,15 +62,6 @@ void SystemClock_Config(void);
   * @brief  The application entry point.
   * @retval int
   */
-
- void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-  /* USER-GENERATED interrupt callbacks */
-  if (GPIO_Pin == GPIO_PIN_13) {
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-  }
-}
-
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -95,6 +87,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
