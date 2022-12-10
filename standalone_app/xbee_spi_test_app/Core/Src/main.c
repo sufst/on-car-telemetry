@@ -61,6 +61,15 @@ void SystemClock_Config(void);
   * @brief  The application entry point.
   * @retval int
   */
+
+ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  /* USER-GENERATED interrupt callbacks */
+  if (GPIO_Pin == GPIO_PIN_13) {
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+  }
+}
+
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -95,10 +104,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    HAL_GPIO_WritePin( GPIOA, GPIO_PIN_5, GPIO_PIN_SET );
-    HAL_Delay( 1000 );
-    HAL_GPIO_WritePin( GPIOA, GPIO_PIN_5, GPIO_PIN_RESET );
-    HAL_Delay( 1000 );
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

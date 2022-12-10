@@ -1,2 +1,3 @@
 src/build/*
 standalone_app/xbee_spi_test_app/build/*
+standalone_app/xbee_spi_test_app/.vscode/*
