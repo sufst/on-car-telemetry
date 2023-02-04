@@ -47,8 +47,6 @@ int l_timestamp, c_timestamp;
   //Ready bitstream to be sent by SPI.
   tx_queue_send(&queue_spi, &pdu_struct, TX_WAIT_FOREVER);
 
-  // Introduce delay 500ms
-  tx_thread_sleep(500);
 
   }
 
