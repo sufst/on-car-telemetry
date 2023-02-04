@@ -62,7 +62,7 @@ void queue_receive_thread_entry(ULONG input)
 {
 can_handler_t* handlerunpack;
 pdu_t pdu_struct;
-int l_timestamp, c_timestamp;
+uint32_t l_timestamp, c_timestamp;
   while(1){
 
   // Receive data from the queue.
@@ -77,11 +77,11 @@ int l_timestamp, c_timestamp;
     while(queue_data.identifier != handlerunpack->identifier && i < 20);
 
   // Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table.
-  l_timestamp = ts_table[i-1].timestamp;
+  l_timestamp = ts_table[i-1];
   c_timestamp = tx_time_get(); 
   if(c_timestamp - l_timestamp < 500){continue;}
 
-  ts_table[i-1].timestamp = c_timestamp;
+  ts_table[i-1] = c_timestamp;
   
   // Fill pdu_struct data buffer
   handlerunpack->unpack_func(&pdu_struct.data, queue_data.data, queue_data.length);
