@@ -5,9 +5,9 @@
 #include "can_publisher.h"
 #include "can_database.h"
 #include "can_handlers.h"
-//#include "telemetry_protocol.h"
 #include "can_unpack.h"
-TX_QUEUE queue_spi;
+
+static TX_QUEUE queue_spi;
 /**
  * @brief Queue_Rx thread instance
  */
@@ -63,36 +63,42 @@ void queue_receive_thread_entry(ULONG input)
 can_handler_t* handlerunpack;
 pdu_t pdu_struct;
 uint32_t l_timestamp, c_timestamp;
+
   while(1){
+    int ret;
+    // Receive data from the queue.
+    ret = tx_queue_receive(&queue, &queue_data, TX_WAIT_FOREVER);
+    if(ret != TX_SUCCESS){
+      return ret;
+      }
+    // Find the can handler of matching identifier
+    int i = 0;
+      do{
+          handlerunpack = can_handler_get(i);
+          i++;
+      }
+      while(queue_data.identifier != handlerunpack->identifier && i < 20);
 
-  // Receive data from the queue.
-  tx_queue_receive(&queue, &queue_data, TX_WAIT_FOREVER);
-  
-  // Find the can handler of matching identifier
-  int i = 0;
-    do{
-        handlerunpack = can_handler_get(i);
-        i++;
-    }
-    while(queue_data.identifier != handlerunpack->identifier && i < 20);
+    // Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table.
+    l_timestamp = ts_table[i-1];
+    c_timestamp = tx_time_get(); 
+    if(c_timestamp - l_timestamp < 500){continue;}
 
-  // Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table.
-  l_timestamp = ts_table[i-1];
-  c_timestamp = tx_time_get(); 
-  if(c_timestamp - l_timestamp < 500){continue;}
+    ts_table[i-1] = c_timestamp;
+    
+    // Fill pdu_struct data buffer
+    handlerunpack->unpack_func(&pdu_struct.data, queue_data.data, queue_data.length);
 
-  ts_table[i-1] = c_timestamp;
-  
-  // Fill pdu_struct data buffer
-  handlerunpack->unpack_func(&pdu_struct.data, queue_data.data, queue_data.length);
+    pdu_struct.header.epoch = c_timestamp; // Assign timestamp
+    pdu_struct.start_byte = 1; // Assign start byte
+    pdu_struct.ID = 0; // Assign PDU ID
+    pdu_struct.header.valid_bitfield = 1; // Assign Valid_bitfield
 
-  pdu_struct.header.epoch = c_timestamp; // Assign timestamp
-  pdu_struct.start_byte = 1; // Assign start byte
-  pdu_struct.ID = 0; // Assign PDU ID
-  pdu_struct.header.valid_bitfield = 1; // Assign Valid_bitfield
-
-  //Ready bitstream to be sent by SPI.
-  tx_queue_send(&queue_spi, &pdu_struct, TX_WAIT_FOREVER);
+    //Ready bitstream to be sent by SPI.
+    ret = tx_queue_send(&queue_spi, &pdu_struct, TX_WAIT_FOREVER);
+    if(ret != TX_SUCCESS){
+      return ret;
+      }
 
 
   }

@@ -66,8 +66,13 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   (void)byte_pool;
 
   ret = queue_send_thread_create(byte_pool);
-
+  if(ret != TX_SUCCESS){
+    return ret;
+  }
   ret = queue_receive_thread_create(byte_pool);
+  if(ret != TX_SUCCESS){
+    return ret;
+  }
 
   /* USER CODE END App_ThreadX_Init */
 

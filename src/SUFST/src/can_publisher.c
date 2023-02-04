@@ -10,7 +10,7 @@
  * @brief Queue_Send thread instance
  */
 
-TX_QUEUE queue;
+static TX_QUEUE queue;
 static TX_THREAD  Queue_Send_thread;
 static ULONG queue_memory_area[QUEUE_SIZE * sizeof(rtcan_msg_t)];
 
@@ -58,6 +58,7 @@ void queue_send_thread_entry(ULONG input)
 {
     // Simulated CAN message
     rtcan_msg_t queue_data;
+    int ret;
 
     while(1){
     
@@ -73,8 +74,10 @@ void queue_send_thread_entry(ULONG input)
     }
 
     // Send the data to the queue.
-    tx_queue_send(&queue, &queue_data, TX_WAIT_FOREVER);
-
+    ret = tx_queue_send(&queue, &queue_data, TX_WAIT_FOREVER);
+    if(ret != TX_SUCCESS){
+        return ret;
+    }
     // Introduce 500ms delay
     tx_thread_sleep(500);
     }
