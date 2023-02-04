@@ -1,3 +1,3 @@
-[submodule "src/SUFST/inc/can-defs"]
-	path = src/SUFST/inc/can-defs
+[submodule "src/Middlewares/SUFST/can-defs"]
+	path = src/Middlewares/SUFST/can-defs
 	url = https://github.com/sufst/can-defs
