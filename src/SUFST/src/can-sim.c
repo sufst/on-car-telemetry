@@ -11,90 +11,78 @@
 #include <stdio.h>
 #include "can_database.c"
 #include "can_handlers.c"
+#include "telemetry_protocol.h"
 
 
-/**
- * @brief can_database_m173_modulation_and_flux_info_s struct
- * 
-    int16_t inv_modulation_index;
-    int16_t inv_flux_weakening_output;
-    int16_t inv_id_command;
-    int16_t inv_iq_command;
- * 
- */
-struct can_database_m173_modulation_and_flux_info_t can_database_m173_modulation_and_flux_info_s = {43 , -1230 , -8 , 647};
-struct can_database_m173_modulation_and_flux_info_t can_database_m173_modulation_and_flux_info_target = {0 , 0 , 0 , 0};
-
-/**
- * @brief   RTCAN message (normally defined in rtcan.h)
- *
- * @note    This must have a size that is a multiple of sizeof(ULONG) for use
- *          with TX_QUEUE
- */
-typedef struct
-{
-    /**
-     * @brief   CAN standard identifier for message
-     */
-    uint32_t identifier;
-
-    /**
-     * @brief   Message data buffer
-     */
-    uint8_t data[8];
-
-    /**
-     * @brief   Length of message data in bytes
-     */
-    uint32_t length;
-
-} rtcan_msg_t;
-
-//rtcan_msg_t message;
-/*
-1.Encode data
-2.Pack data
-3.Send to other thread.
-*/
 
 int main(){
 
-
+/*
 printf("This struct has members: %d %d %d %d\n",    can_database_m173_modulation_and_flux_info_s.inv_modulation_index, \
                                     can_database_m173_modulation_and_flux_info_s.inv_flux_weakening_output, \
                                     can_database_m173_modulation_and_flux_info_s.inv_id_command, \
                                     can_database_m173_modulation_and_flux_info_s.inv_iq_command);
-
+*/
 rtcan_msg_t message;
+pdu_t pdu_struct;
+can_handler_t* handlerunpack;
+timestamp_table_t* ts;
+
 //Pack into memory bitstream and to message struct
 
-const can_handler_t* handlerpack = can_handler_get(0);
-handlerpack->pack_func(message.data, &can_database_m173_modulation_and_flux_info_s, CAN_DATABASE_M173_MODULATION_AND_FLUX_INFO_LENGTH);
+for(int i = 0; i < 7; i++){
+message.data[i] = 0x00 + i; //Input data from CAN / Simulator
+}
+message.identifier = CAN_DATABASE_M160_TEMPERATURE_SET_1_FRAME_ID;
+message.length = CAN_DATABASE_M160_TEMPERATURE_SET_1_LENGTH;
 
-message.identifier = CAN_DATABASE_M173_MODULATION_AND_FLUX_INFO_FRAME_ID;
-message.length = CAN_DATABASE_M173_MODULATION_AND_FLUX_INFO_LENGTH;
+int j = 0;
+do{
+    ts = &ts_table[j];
+    j++;
+}
+while(message.identifier != ts->identifier && j < 20);
+
+if(tx_time_get() - ts->timestamp <= 500){return 0; } //Skip if too often 500ms
+ts->timestamp = tx_time_get(); //tx_time_get()
 
 //Send struct message to queue (other thread)
-//
-//Send_queue(message)
-//
+/*Send_queue(message)*/
 
-//Repeat with other data input (see dictionary)
-
-
+//- - - - - ->
 
 //Receiver part:
 //Receive_queue(message)
+
 //Find the entry with matching id with message.identifier
-//const can_handler_t* handler = can_handler_get(0); //Find the entry of matching id
+int i = 0;
+do{
+    handlerunpack = can_handler_get(i); //Find the entry of matching id
+    i++;
+}
+while(message.identifier != handlerunpack->identifier && i < 20);
 
-const can_handler_t* handlerunpack = can_handler_get(0); //Find the entry of matching id
-handlerunpack->unpack_func(&can_database_m173_modulation_and_flux_info_target, message.data, message.length);
 
-printf("Another struct has members: %d %d %d %d\n",    can_database_m173_modulation_and_flux_info_target.inv_modulation_index, \
-                                    can_database_m173_modulation_and_flux_info_target.inv_flux_weakening_output, \
-                                    can_database_m173_modulation_and_flux_info_target.inv_id_command, \
-                                    can_database_m173_modulation_and_flux_info_target.inv_iq_command);
+handlerunpack->unpack_func(&pdu_struct.data, message.data, message.length);
+
+pdu_struct.start_byte = 1; //Assign start byte
+pdu_struct.ID = 0; //Assign PDU ID
+pdu_struct.header.epoch = handlerunpack->l_timestamp;
+//pdu_struct.header.epoch = 567; //Assign Timestamp - use tx_time_get()
+pdu_struct.header.valid_bitfield = 0;
+
+
+
+printf("\nAnother struct has members:");
+for(int i = 0; i < 7; i++){
+
+printf("%x", pdu_struct.data[i]);
+
+}
+printf("This is epoch: %d\n", pdu_struct.header.epoch);
+
+//Ready bitstream to be sent by SPI.
+//Send_queue(pdu_struct)
 
 return 0;
 }

@@ -9,7 +9,9 @@
                 "-g",
                 "${file}",
                 "-I",
-                "C:\\Users\\Piotrek\\Documents\\GitHub\\on-car-telemetry\\src\\SUFST\\inc",
+                "C:\\Users\\Piotr\\Documents\\GitHub\\on-car-telemetry\\src\\SUFST\\inc",
+                "-I",
+                "C:\\Users\\Piotr\\Documents\\GitHub\\on-car-telemetry\\src\\SUFST\\inc\\can-defs\\out",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
