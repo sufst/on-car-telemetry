@@ -1,5 +1,5 @@
 #include "tx_api.h"
-#include "telemetry_protocol"
+#include "telemetry_protocol.h"
 
 #define QUEUE_SIZE 100
 

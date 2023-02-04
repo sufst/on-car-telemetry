@@ -14,8 +14,8 @@ void queue_send_thread_entry(ULONG input)
     
     // Simulate CAN Message here. TODO: Get input from file.
 
-    queue_data.identifier = CAN_DATABASE_M160_TEMPERATURE_SET_1_FRAME_ID;
-    queue_data.length = CAN_DATABASE_M160_TEMPERATURE_SET_1_LENGTH;
+    queue_data.identifier = CAN_DATABASE_PM100_VOLTAGE_INFO_FRAME_ID;
+    queue_data.length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
 
     for(int i = 0; i<8; i++){
 
