@@ -1,15 +1,62 @@
+#ifndef CAN_UNPACK_C
+#define CAN_UNPACK_C
 #include <tx_api.h>
 
 #include "can_publisher.h"
 #include "can_database.h"
 #include "can_handlers.h"
-#include "telemetry_protocol.h"
+//#include "telemetry_protocol.h"
 #include "can_unpack.h"
+TX_QUEUE queue_spi;
+/**
+ * @brief Queue_Rx thread instance
+ */
+static TX_THREAD  Queue_Rx_thread;
+
+
+#define QUEUE_RX_THREAD_PRIORITY             10
+#define QUEUE_RX_THREAD_STACK_SIZE           512
+#define QUEUE_RX_THREAD_PREEMPTION_THRESHOLD 10
+#define QUEUE_RX_THREAD_NAME                 "Queue_Rx Thread"
 
 #define QUEUE_SIZE 100
+static ULONG queue_memory_area[QUEUE_SIZE * sizeof(pdu_t)];
 
 // Simulated CAN message
 rtcan_msg_t queue_data;
+
+/**
+ * @brief 		Creates the Unpack thread
+ *
+ * @param[in]	stack_pool_ptr	Pointer to start of application stack area
+ *
+ * @return		See ThreadX return codes
+ */
+UINT queue_receive_thread_create(TX_BYTE_POOL* stack_pool_ptr)
+{
+    VOID* thread_stack_ptr;
+
+    UINT ret = tx_byte_allocate(stack_pool_ptr,
+                                &thread_stack_ptr,
+                                QUEUE_RX_THREAD_STACK_SIZE,
+                                TX_NO_WAIT);
+
+    if (ret == TX_SUCCESS)
+    {
+        ret = tx_thread_create(&Queue_Rx_thread,
+                               QUEUE_RX_THREAD_NAME,
+                               queue_receive_thread_entry,
+                               0,
+                               thread_stack_ptr,
+                               QUEUE_RX_THREAD_STACK_SIZE,
+                               QUEUE_RX_THREAD_PRIORITY,
+                               QUEUE_RX_THREAD_PREEMPTION_THRESHOLD,
+                               TX_NO_TIME_SLICE,
+                               TX_AUTO_START);
+    }
+
+    return ret;
+}
 
 void queue_receive_thread_entry(ULONG input)
 {
@@ -51,3 +98,6 @@ int l_timestamp, c_timestamp;
   }
 
 }
+
+
+#endif /* CAN_UNPACK_C */

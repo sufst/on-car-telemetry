@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "can_publisher.h"
+#include "can_unpack.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,6 +64,11 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 
   /* USER CODE BEGIN App_ThreadX_Init */
   (void)byte_pool;
+
+  ret = queue_send_thread_create(byte_pool);
+
+  ret = queue_receive_thread_create(byte_pool);
+
   /* USER CODE END App_ThreadX_Init */
 
   return ret;
