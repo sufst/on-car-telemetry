@@ -36,8 +36,8 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-SUFST/inc/can-defs/out/can_database.c \
-SUFST/inc/can-defs/out/can_handlers.c \
+Middlewares/SUFST/can-defs/out/can_database.c \
+Middlewares/SUFST/can-defs/out/can_handlers.c \
 SUFST/src/can_publisher.c \
 SUFST/src/can_unpack.c \
 Core/Src/main.c \
@@ -303,7 +303,7 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -ISUFST/inc \
--ISUFST/inc/can-defs/out \
+-IMiddlewares/SUFST/can-defs/out \
 -ICore/Inc \
 -IAZURE_RTOS/App \
 -IDrivers/STM32F4xx_HAL_Driver/Inc \
