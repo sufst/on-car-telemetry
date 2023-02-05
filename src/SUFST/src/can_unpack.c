@@ -74,7 +74,8 @@ void queue_receive_thread_entry(ULONG input)
             return ret;
         }
         /* Find the can handler of matching identifier */
-        for(int i = 0; i<=TABLE_SIZE; i++)
+        int i = 0;
+        for(i; i<=TABLE_SIZE; i++)
         {
             handlerunpack = can_handler_get(i);
             
@@ -91,13 +92,13 @@ void queue_receive_thread_entry(ULONG input)
           continue;
         }
         /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
-        l_timestamp = ts_table[i-1];
+        l_timestamp = ts_table[i];
         c_timestamp = tx_time_get();
         if (c_timestamp - l_timestamp < 500)
         {
           continue;
         }
-        ts_table[i-1] = c_timestamp;
+        ts_table[i] = c_timestamp;
 
         /* Fill pdu_struct data buffer */
         handlerunpack->unpack_func(&pdu_struct.data, queue_data.data, queue_data.length);
