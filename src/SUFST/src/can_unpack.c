@@ -60,50 +60,62 @@ UINT queue_receive_thread_create(TX_BYTE_POOL* stack_pool_ptr)
 
 void queue_receive_thread_entry(ULONG input)
 {
-can_handler_t* handlerunpack;
-pdu_t pdu_struct;
-uint32_t l_timestamp, c_timestamp;
+    can_handler_t* handlerunpack = NULL;
+    pdu_t pdu_struct;
+    uint32_t l_timestamp, c_timestamp;
 
-  while(1){
-    int ret;
-    // Receive data from the queue.
-    ret = tx_queue_receive(&queue, &queue_data, TX_WAIT_FOREVER);
-    if(ret != TX_SUCCESS){
-      return ret;
-      }
-    // Find the can handler of matching identifier
-    int i = 0;
-      do{
-          handlerunpack = can_handler_get(i);
-          i++;
-      }
-      while(queue_data.identifier != handlerunpack->identifier && i < 20);
+    while (1)
+    {
+        int ret;
+        /* Receive data from the queue. */
+        ret = tx_queue_receive(&queue, &queue_data, TX_WAIT_FOREVER);
+        if (ret != TX_SUCCESS)
+        {
+            return ret;
+        }
+        /* Find the can handler of matching identifier */
+        for(int i = 0; i<=TABLE_SIZE; i++)
+        {
+            handlerunpack = can_handler_get(i);
+            
+            if(queue_data.identifier == handlerunpack->identifier)
+            {
+              break;
+            }
+            /* Couldn't find matching identifier - deassign pointer. */
+            if(i == TABLE_SIZE)handlerunpack = NULL;
+        }
+        /* Skip frame if couldn't find matching identifier. */
+        if(handlerunpack == NULL)
+        {
+          continue;
+        }
+        /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
+        l_timestamp = ts_table[i-1];
+        c_timestamp = tx_time_get();
+        if (c_timestamp - l_timestamp < 500)
+        {
+          continue;
+        }
+        ts_table[i-1] = c_timestamp;
 
-    // Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table.
-    l_timestamp = ts_table[i-1];
-    c_timestamp = tx_time_get(); 
-    if(c_timestamp - l_timestamp < 500){continue;}
+        /* Fill pdu_struct data buffer */
+        handlerunpack->unpack_func(&pdu_struct.data, queue_data.data, queue_data.length);
 
-    ts_table[i-1] = c_timestamp;
-    
-    // Fill pdu_struct data buffer
-    handlerunpack->unpack_func(&pdu_struct.data, queue_data.data, queue_data.length);
+        pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
+        pdu_struct.start_byte = 1; /* Assign start byte */
+        pdu_struct.ID = 0; /* Assign PDU ID */
+        pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
 
-    pdu_struct.header.epoch = c_timestamp; // Assign timestamp
-    pdu_struct.start_byte = 1; // Assign start byte
-    pdu_struct.ID = 0; // Assign PDU ID
-    pdu_struct.header.valid_bitfield = 1; // Assign Valid_bitfield
-
-    //Ready bitstream to be sent by SPI.
-    ret = tx_queue_send(&queue_spi, &pdu_struct, TX_WAIT_FOREVER);
-    if(ret != TX_SUCCESS){
-      return ret;
-      }
-
-
-  }
-
+        /* Ready bitstream to be sent by SPI. */
+        ret = tx_queue_send(&queue_spi, &pdu_struct, TX_WAIT_FOREVER);
+        if (ret != TX_SUCCESS)
+        {
+            return ret;
+        }
+    }
 }
+
 
 
 #endif /* CAN_UNPACK_C */
