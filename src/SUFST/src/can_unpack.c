@@ -7,7 +7,7 @@
 #include "can_handlers.h"
 #include "can_unpack.h"
 
-static TX_QUEUE queue_spi;
+TX_QUEUE queue_spi;
 /**
  * @brief Queue_Rx thread instance
  */

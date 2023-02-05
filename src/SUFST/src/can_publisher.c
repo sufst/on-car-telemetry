@@ -10,7 +10,7 @@
  * @brief Queue_Send thread instance
  */
 
-static TX_QUEUE queue;
+TX_QUEUE queue;
 static TX_THREAD  Queue_Send_thread;
 static ULONG queue_memory_area[QUEUE_SIZE * sizeof(rtcan_msg_t)];
 
