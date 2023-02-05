@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "can_publisher.h"
+#include "can_unpack.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,15 +59,28 @@
   */
 UINT App_ThreadX_Init(VOID *memory_ptr)
 {
-  UINT ret = TX_SUCCESS;
-  TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
+    UINT ret = TX_SUCCESS;
+    TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
 
-  /* USER CODE BEGIN App_ThreadX_Init */
-  (void)byte_pool;
-  /* USER CODE END App_ThreadX_Init */
+    /* USER CODE BEGIN App_ThreadX_Init */
+    (void)byte_pool;
 
-  return ret;
+    ret = queue_send_thread_create(byte_pool);
+    if (ret != TX_SUCCESS)
+    {
+        return ret;
+    }
+    ret = queue_receive_thread_create(byte_pool);
+    if (ret != TX_SUCCESS)
+    {
+        return ret;
+    }
+
+    /* USER CODE END App_ThreadX_Init */
+
+    return ret;
 }
+
 
 /**
   * @brief  MX_ThreadX_Init

@@ -1,6 +1,9 @@
 {
     "files.associations": {
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "can_unpack.h": "c",
+        "can_publisher.h": "c",
+        "telemetry_protocol.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }
