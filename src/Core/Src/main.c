@@ -57,20 +57,20 @@ void SystemClock_Config(void);
 #if defined(__GNUC__)
 int _write(int fd, char * ptr, int len)
 {
-  HAL_UART_Transmit(&huart4, (uint8_t *) ptr, len, HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart2, (uint8_t *) ptr, len, HAL_MAX_DELAY);
   return len;
 }
 #elif defined (__ICCARM__)
 #include "LowLevelIOInterface.h"
 size_t __write(int handle, const unsigned char * buffer, size_t size)
 {
-  HAL_UART_Transmit(&huart4, (uint8_t *) buffer, size, HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart2, (uint8_t *) buffer, size, HAL_MAX_DELAY);
   return size;
 }
 #elif defined (__CC_ARM)
 int fputc(int ch, FILE *f)
 {
-    HAL_UART_Transmit(&huart4, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
     return ch;
 }
 #endif
@@ -92,7 +92,7 @@ int fputc(int ch, FILE *f)
   */
 PUTCHAR_PROTOTYPE
 {
-  HAL_UART_Transmit(&huart4, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
   return ch;
 }
 /* USER CODE END PFP */
@@ -132,8 +132,9 @@ int main(void)
   MX_GPIO_Init();
   MX_CAN1_Init();
   MX_CAN2_Init();
+  MX_SPI1_Init();
   MX_UART4_Init();
-  MX_SPI2_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

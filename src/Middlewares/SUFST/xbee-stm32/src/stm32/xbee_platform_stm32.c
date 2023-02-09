@@ -41,7 +41,7 @@ return tx_time_get();
 
 FPUTCHAR_PROTOTYPE
 {
-  HAL_UART_Transmit(&huart4, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
   return ch;
 }
 
@@ -70,9 +70,9 @@ int xbee_readline( char *buffer, int length)
             // fall through to continued input
 
         case XBEE_READLINE_STATE_CONTINUE_LINE:     // continued input
-            __HAL_UART_CLEAR_OREFLAG(&huart4);
+            __HAL_UART_CLEAR_OREFLAG(&huart2);
             //ret = getc();
-            ret = HAL_UART_Receive(&huart4, &c, 1, HAL_MAX_DELAY);
+            ret = HAL_UART_Receive(&huart2, &c, 1, HAL_MAX_DELAY);
 //            fputc(ret);
             if(ret != HAL_OK){
                 return -EAGAIN;

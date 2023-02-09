@@ -20,12 +20,12 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "app_threadx.h"
-//#include "blink_thread.h"
-#include "uart_thread.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+//#include "blink_thread.h"
+#include "uart_thread.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
