@@ -1,23 +1,9 @@
-#ifndef CAN_PUBLISHER_C
-#define CAN_PUBLISHER_C
 #include <tx_api.h>
 #include "can_publisher.h"
-#include "can_database.h"
-#include "telemetry_protocol.h"
-
-#define QUEUE_SIZE 100
-/**
- * @brief Queue_Send thread instance
- */
-
-TX_QUEUE queue;
-static TX_THREAD  Queue_Send_thread;
-static ULONG queue_memory_area[QUEUE_SIZE * sizeof(rtcan_msg_t)];
 
 #define QUEUE_SEND_THREAD_PRIORITY             10
-#define QUEUE_SEND_THREAD_STACK_SIZE           512
-#define QUEUE_SEND_THREAD_PREEMPTION_THRESHOLD 10
-#define QUEUE_SEND_THREAD_NAME                 "Queue_Send Thread"
+#define QUEUE_SEND_THREAD_STACK_SIZE           1024
+#define QUEUE_SEND_THREAD_PREEMPTION_THRESHOLD 10                
 
 /**
  * @brief 		Creates the Unpack thread
@@ -26,23 +12,31 @@ static ULONG queue_memory_area[QUEUE_SIZE * sizeof(rtcan_msg_t)];
  *
  * @return		See ThreadX return codes
  */
-UINT queue_send_thread_create(TX_BYTE_POOL* stack_pool_ptr)
+UINT can_publisher_init(publisher_context_t* publisher_ptr, TX_BYTE_POOL* stack_pool_ptr)
 {
-    tx_queue_create(&queue, "CANQueue", QUEUE_SIZE, queue_memory_area, sizeof(ULONG));
 
-    VOID* thread_stack_ptr;
+    VOID* thread_stack_ptr = NULL;
+/* Setup transmit queue */
+    UINT tx_status = tx_queue_create(&publisher_ptr->tx_queue,
+                                     "CAN Simulation Queue",
+                                     sizeof(rtcan_msg_t*)/sizeof(ULONG),
+                                     &publisher_ptr->tx_queue_mem,
+                                     CAN_PUBLISHER_TX_QUEUE_SIZE * sizeof(rtcan_msg_t));
 
-    UINT ret = tx_byte_allocate(stack_pool_ptr,
+    if(tx_status == TX_SUCCESS)
+    {
+        tx_status = tx_byte_allocate(stack_pool_ptr,
                                 &thread_stack_ptr,
                                 QUEUE_SEND_THREAD_STACK_SIZE,
                                 TX_NO_WAIT);
+    }
 
-    if (ret == TX_SUCCESS)
+    if (tx_status == TX_SUCCESS)
     {
-        ret = tx_thread_create(&Queue_Send_thread,
-                               QUEUE_SEND_THREAD_NAME,
+        tx_status = tx_thread_create(&publisher_ptr->thread,
+                               "CAN Publisher Thread",
                                queue_send_thread_entry,
-                               0,
+                               publisher_ptr,
                                thread_stack_ptr,
                                QUEUE_SEND_THREAD_STACK_SIZE,
                                QUEUE_SEND_THREAD_PRIORITY,
@@ -51,32 +45,32 @@ UINT queue_send_thread_create(TX_BYTE_POOL* stack_pool_ptr)
                                TX_AUTO_START);
     }
 
-    return ret;
+    return tx_status;
 }
 
 void queue_send_thread_entry(ULONG input)
 {
+    publisher_context_t* publisher_ptr = (publisher_context_t*) input;
+
     // Simulated CAN message
-    rtcan_msg_t queue_data;
-    int ret;
+    rtcan_msg_t* queue_data;
 
     while(1){
     
     // Simulate CAN Message here. TODO: Get input from file.
 
-    queue_data.identifier = CAN_DATABASE_PM100_VOLTAGE_INFO_FRAME_ID;
-    queue_data.length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
+    queue_data->identifier = CAN_DATABASE_PM100_VOLTAGE_INFO_FRAME_ID;
+    queue_data->length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
 
-    for(int i = 0; i<8; i++){
-
-    queue_data.data[i] = i;
-
+    for(int i = 0; i<8; i++)
+    {
+        queue_data->data[i] = i;
     }
 
     // Send the data to the queue.
-    ret = tx_queue_send(&queue, &queue_data, TX_WAIT_FOREVER);
+    UINT ret = tx_queue_send(&publisher_ptr->tx_queue, &queue_data, TX_WAIT_FOREVER);
     if(ret != TX_SUCCESS){
-        return ret;
+        return;
     }
     // Introduce 500ms delay
     tx_thread_sleep(500);
@@ -84,5 +78,7 @@ void queue_send_thread_entry(ULONG input)
 
 }
 
-
-#endif /* CAN_PUBLISHER_C */
+TX_QUEUE * get_can_pub_queue_ptr(publisher_context_t* pub_context)
+{
+  return &pub_context->tx_queue;
+}

@@ -44,7 +44,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+static publisher_context_t pub_context;
+static unpack_context_t unpack_context;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,12 +66,12 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     /* USER CODE BEGIN App_ThreadX_Init */
     (void)byte_pool;
 
-    ret = queue_send_thread_create(byte_pool);
+    ret = can_publisher_init(&pub_context, byte_pool);
     if (ret != TX_SUCCESS)
     {
         return ret;
     }
-    ret = queue_receive_thread_create(byte_pool);
+    ret = unpack_init(&unpack_context, byte_pool, get_can_pub_queue_ptr(&pub_context));
     if (ret != TX_SUCCESS)
     {
         return ret;

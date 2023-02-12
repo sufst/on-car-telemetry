@@ -1,3 +1,6 @@
+#ifndef CAN_TELEMETRY_H
+#define CAN_TELEMETRY_H
+
 #include <stdint.h>
 #include <can_database.h>
 
@@ -73,3 +76,5 @@ typedef struct
  * @brief   Table of CAN message IDs and associated unpacking functions
  */
 static uint32_t ts_table[TABLE_SIZE] = {0};
+
+#endif /* CAN_TELEMETRY_H */
