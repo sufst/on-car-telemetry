@@ -3,7 +3,8 @@
         "gpio.h": "c",
         "can_unpack.h": "c",
         "can_publisher.h": "c",
-        "telemetry_protocol.h": "c"
+        "telemetry_protocol.h": "c",
+        "stdint.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }
