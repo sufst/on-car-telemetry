@@ -19,5 +19,4 @@ typedef struct {
 UINT can_publisher_init(publisher_context_t* publisher_ptr, TX_BYTE_POOL* stack_pool_ptr);
 void queue_send_thread_entry(ULONG input);
 
-
 #endif /* CAN_PUBLISHER_H */

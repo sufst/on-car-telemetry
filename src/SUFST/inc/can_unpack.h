@@ -15,13 +15,13 @@ typedef struct {
 
   pdu_t tx_queue_mem[TX_QUEUE_SIZE];
 
-  TX_QUEUE rx_queue;
+  TX_QUEUE * rx_queue;
 
   rtcan_msg_t* rx_queue_mem[RX_QUEUE_SIZE];
 
 } unpack_context_t;
 
-UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr);
+UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr, TX_QUEUE * can_queue);
 void queue_receive_thread_entry(ULONG input);
 
 

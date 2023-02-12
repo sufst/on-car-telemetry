@@ -7,25 +7,16 @@
 #define QUEUE_RX_THREAD_STACK_SIZE           1024
 #define QUEUE_RX_THREAD_PREEMPTION_THRESHOLD 10
 
-UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr){
+UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr, TX_QUEUE * can_queue){
 
 VOID* thread_stack_ptr = NULL;
+unpack_ptr->rx_queue = can_queue;
 /* Setup transmit queue */
     UINT tx_status = tx_queue_create(&unpack_ptr->tx_queue,
                                      "SPI Data Receive Queue",
                                      sizeof(pdu_t)/sizeof(ULONG),
                                      &unpack_ptr->tx_queue_mem,
                                      TX_QUEUE_SIZE * sizeof(pdu_t));
-
-/* Setup receive queue */
-    if(tx_status == TX_SUCCESS)
-    {
-        tx_status = tx_queue_create(&unpack_ptr->rx_queue,
-                                     "Unpack CAN Receive Queue",
-                                     sizeof(rtcan_msg_t*)/sizeof(ULONG),
-                                     &unpack_ptr->rx_queue_mem,
-                                     TX_QUEUE_SIZE * sizeof(rtcan_msg_t));
-    }
 
     if(tx_status == TX_SUCCESS)
     {
