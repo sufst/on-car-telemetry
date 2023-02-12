@@ -4,8 +4,8 @@
 #include "telemetry_protocol.h"
 
 
-#define TX_QUEUE_SIZE 10
-#define RX_QUEUE_SIZE 10
+#define PDU_TX_QUEUE_SIZE 10
+#define CAN_PUBLISHER_RX_QUEUE_SIZE 10 //TODO: add config.h storing such values to avoid redefinition.
 
 typedef struct {
 
@@ -13,16 +13,15 @@ typedef struct {
 
   TX_QUEUE tx_queue;
 
-  pdu_t tx_queue_mem[TX_QUEUE_SIZE];
+  pdu_t tx_queue_mem[PDU_TX_QUEUE_SIZE];
 
   TX_QUEUE * rx_queue;
 
-  rtcan_msg_t* rx_queue_mem[RX_QUEUE_SIZE];
+  rtcan_msg_t* rx_queue_mem[CAN_PUBLISHER_RX_QUEUE_SIZE];
 
 } unpack_context_t;
 
 UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr, TX_QUEUE * can_queue);
-void queue_receive_thread_entry(ULONG input);
 
 
 #endif /* CAN_UNPACK_H */

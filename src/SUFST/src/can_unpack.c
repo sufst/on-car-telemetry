@@ -16,7 +16,7 @@ unpack_ptr->rx_queue = can_queue;
                                      "SPI Data Receive Queue",
                                      sizeof(pdu_t)/sizeof(ULONG),
                                      &unpack_ptr->tx_queue_mem,
-                                     TX_QUEUE_SIZE * sizeof(pdu_t));
+                                     PDU_TX_QUEUE_SIZE * sizeof(pdu_t));
 
     if(tx_status == TX_SUCCESS)
     {
@@ -60,7 +60,7 @@ void queue_receive_thread_entry(ULONG input)
         ret = tx_queue_receive(&unpack_ptr->rx_queue, &rx_msg, TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
-            return ret;
+            return;
         }
         /* Find the can handler of matching identifier */
         int i = 0;
@@ -101,7 +101,7 @@ void queue_receive_thread_entry(ULONG input)
         ret = tx_queue_send(&unpack_ptr->tx_queue, &pdu_struct, TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
-            return ret;
+            return;
         }
     }
 }

@@ -21,7 +21,7 @@ UINT can_publisher_init(publisher_context_t* publisher_ptr, TX_BYTE_POOL* stack_
                                      "CAN Simulation Queue",
                                      sizeof(rtcan_msg_t*)/sizeof(ULONG),
                                      &publisher_ptr->tx_queue_mem,
-                                     TX_QUEUE_SIZE * sizeof(rtcan_msg_t));
+                                     CAN_PUBLISHER_TX_QUEUE_SIZE * sizeof(rtcan_msg_t));
 
     if(tx_status == TX_SUCCESS)
     {
@@ -70,10 +70,15 @@ void queue_send_thread_entry(ULONG input)
     // Send the data to the queue.
     UINT ret = tx_queue_send(&publisher_ptr->tx_queue, &queue_data, TX_WAIT_FOREVER);
     if(ret != TX_SUCCESS){
-        return ret;
+        return;
     }
     // Introduce 500ms delay
     tx_thread_sleep(500);
     }
 
+}
+
+TX_QUEUE * get_can_pub_queue_ptr(publisher_context_t* pub_context)
+{
+  return &pub_context->tx_queue;
 }

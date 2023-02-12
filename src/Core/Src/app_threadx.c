@@ -50,10 +50,7 @@ static unpack_context_t unpack_context;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-TX_QUEUE * get_can_pub_queue_ptr()
-{
-  return &pub_context.tx_queue;
-}
+
 /* USER CODE END PFP */
 
 /**
@@ -74,7 +71,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     {
         return ret;
     }
-    ret = unpack_init(&unpack_context, byte_pool, get_can_pub_queue_ptr());
+    ret = unpack_init(&unpack_context, byte_pool, get_can_pub_queue_ptr(&pub_context));
     if (ret != TX_SUCCESS)
     {
         return ret;
