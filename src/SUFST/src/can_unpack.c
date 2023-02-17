@@ -2,6 +2,7 @@
 
 #include "can_handlers.h"
 #include "can_unpack.h"
+#include "usart.h"
 
 #define QUEUE_RX_THREAD_PRIORITY             10
 #define QUEUE_RX_THREAD_STACK_SIZE           1024
@@ -33,7 +34,7 @@ unpack_ptr->rx_queue = can_queue;
         tx_status = tx_thread_create(&unpack_ptr->thread,
                                "Queue_Rx Thread",
                                queue_receive_thread_entry,
-                               unpack_ptr,
+                               (ULONG) unpack_ptr,
                                thread_stack_ptr,
                                QUEUE_RX_THREAD_STACK_SIZE,
                                QUEUE_RX_THREAD_PRIORITY,
@@ -47,7 +48,7 @@ unpack_ptr->rx_queue = can_queue;
 
 void queue_receive_thread_entry(ULONG input)
 {
-    unpack_context_t* unpack_ptr = (unpack_context_t*) input;
+    unpack_context_t* unpack_ptr = (unpack_context_t *) input;
 
     can_handler_t* handlerunpack = NULL;
     rtcan_msg_t rx_msg;
@@ -67,9 +68,9 @@ void queue_receive_thread_entry(ULONG input)
         }
         /* Find the can handler of matching identifier */
         int i = 0;
-        for(i; i<=TABLE_SIZE; i++)
+        for(; i<=TABLE_SIZE; i++)
         {
-            handlerunpack = can_handler_get(i);
+            handlerunpack = (can_handler_t *) can_handler_get(i);
             
             if(rx_msg.identifier == handlerunpack->identifier)
             {
@@ -93,7 +94,7 @@ void queue_receive_thread_entry(ULONG input)
         ts_table[i] = c_timestamp;
 
         /* Fill pdu_struct data buffer */
-        handlerunpack->unpack_func(&pdu_struct.data, rx_msg.data, rx_msg.length);
+        handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg.data, rx_msg.length);
 
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
@@ -101,9 +102,17 @@ void queue_receive_thread_entry(ULONG input)
         pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
 
         /* Ready bitstream to be sent by SPI. */
+        /*
         ret = tx_queue_send(&unpack_ptr->tx_queue, (pdu_t*) &pdu_struct, TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
+            return;
+        }
+        */
+        /* Send pdu packet through UART */
+        HAL_StatusTypeDef status = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
+
+        if(status != HAL_OK){
             return;
         }
     }
