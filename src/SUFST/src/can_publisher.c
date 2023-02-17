@@ -75,7 +75,7 @@ void queue_send_thread_entry(ULONG input)
         return;
     }
     // Introduce 500ms delay
-    tx_thread_sleep(500);
+    tx_thread_sleep(50);
     }
 
 }

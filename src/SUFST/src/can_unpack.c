@@ -86,7 +86,7 @@ void queue_receive_thread_entry(ULONG input)
         /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
         l_timestamp = ts_table[i];
         c_timestamp = tx_time_get();
-        if (c_timestamp - l_timestamp < 500)
+        if (c_timestamp - l_timestamp < 50)
         {
           continue;
         }
