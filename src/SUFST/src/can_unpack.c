@@ -50,16 +50,17 @@ void queue_receive_thread_entry(ULONG input)
     unpack_context_t* unpack_ptr = (unpack_context_t*) input;
 
     can_handler_t* handlerunpack = NULL;
+    rtcan_msg_t rx_msg;
     pdu_t pdu_struct;
     uint32_t l_timestamp, c_timestamp;
     
     while (1)
     {
         int ret;
-        rtcan_msg_t* rx_msg;
+        
 
         /* Receive data from the queue. */
-        ret = tx_queue_receive(&unpack_ptr->rx_queue, &rx_msg, TX_WAIT_FOREVER);
+        ret = tx_queue_receive(unpack_ptr->rx_queue, &rx_msg, TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
             return;
@@ -70,7 +71,7 @@ void queue_receive_thread_entry(ULONG input)
         {
             handlerunpack = can_handler_get(i);
             
-            if(&rx_msg->identifier == handlerunpack->identifier)
+            if(rx_msg.identifier == handlerunpack->identifier)
             {
               break;
             }
@@ -92,7 +93,7 @@ void queue_receive_thread_entry(ULONG input)
         ts_table[i] = c_timestamp;
 
         /* Fill pdu_struct data buffer */
-        handlerunpack->unpack_func(&pdu_struct.data, &rx_msg->data, &rx_msg->length);
+        handlerunpack->unpack_func(&pdu_struct.data, rx_msg.data, rx_msg.length);
 
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
@@ -100,7 +101,7 @@ void queue_receive_thread_entry(ULONG input)
         pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
 
         /* Ready bitstream to be sent by SPI. */
-        ret = tx_queue_send(&unpack_ptr->tx_queue, &pdu_struct, TX_WAIT_FOREVER);
+        ret = tx_queue_send(&unpack_ptr->tx_queue, (pdu_t*) &pdu_struct, TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
             return;

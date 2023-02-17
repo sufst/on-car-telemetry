@@ -21,7 +21,7 @@ UINT can_publisher_init(publisher_context_t* publisher_ptr, TX_BYTE_POOL* stack_
 /* Setup transmit queue */
     UINT tx_status = tx_queue_create(&publisher_ptr->tx_queue,
                                      "CAN Simulation Queue",
-                                     sizeof(rtcan_msg_t*)/sizeof(ULONG),
+                                     sizeof(rtcan_msg_t)/sizeof(ULONG),
                                      &publisher_ptr->tx_queue_mem,
                                      CAN_PUBLISHER_TX_QUEUE_SIZE * sizeof(rtcan_msg_t));
 
@@ -55,22 +55,22 @@ void queue_send_thread_entry(ULONG input)
     publisher_context_t* publisher_ptr = (publisher_context_t*) input;
 
     // Simulated CAN message
-    rtcan_msg_t* queue_data;
+    rtcan_msg_t queue_data;
 
     while(1){
     
     // Simulate CAN Message here. TODO: Get input from file.
 
-    queue_data->identifier = CAN_DATABASE_PM100_VOLTAGE_INFO_FRAME_ID;
-    queue_data->length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
+    queue_data.identifier = CAN_DATABASE_PM100_VOLTAGE_INFO_FRAME_ID;
+    queue_data.length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
 
     for(int i = 0; i<8; i++)
     {
-        queue_data->data[i] = i;
+        queue_data.data[i] = i;
     }
 
     // Send the data to the queue.
-    UINT ret = tx_queue_send(&publisher_ptr->tx_queue, &queue_data, TX_WAIT_FOREVER);
+    UINT ret = tx_queue_send(&publisher_ptr->tx_queue, (rtcan_msg_t*) &queue_data, TX_WAIT_FOREVER);
     if(ret != TX_SUCCESS){
         return;
     }
