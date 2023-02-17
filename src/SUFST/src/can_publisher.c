@@ -5,6 +5,8 @@
 #define QUEUE_SEND_THREAD_STACK_SIZE           1024
 #define QUEUE_SEND_THREAD_PREEMPTION_THRESHOLD 10                
 
+void queue_send_thread_entry(ULONG input);
+
 /**
  * @brief 		Creates the Unpack thread
  *

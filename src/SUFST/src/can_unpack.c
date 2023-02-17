@@ -7,6 +7,8 @@
 #define QUEUE_RX_THREAD_STACK_SIZE           1024
 #define QUEUE_RX_THREAD_PREEMPTION_THRESHOLD 10
 
+void queue_receive_thread_entry(ULONG input);
+
 UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr, TX_QUEUE * can_queue){
 
 VOID* thread_stack_ptr = NULL;
