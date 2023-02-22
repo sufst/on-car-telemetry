@@ -36,9 +36,9 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
+Middlewares/SUFST/rtcan/src/rtcan.c \
 Middlewares/SUFST/can-defs/out/can_database.c \
 Middlewares/SUFST/can-defs/out/can_handlers.c \
-SUFST/src/can_publisher.c \
 SUFST/src/can_unpack.c \
 Core/Src/main.c \
 Core/Src/gpio.c \
@@ -311,7 +311,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F4xx/Include \
 -IDrivers/CMSIS/Include \
 -IMiddlewares/ST/threadx/common/inc/ \
--IMiddlewares/ST/threadx/ports/cortex_m4/gnu/inc/
+-IMiddlewares/ST/threadx/ports/cortex_m4/gnu/inc/ \
+-IMiddlewares/SUFST/rtcan/inc
 
 
 # compile gcc flags

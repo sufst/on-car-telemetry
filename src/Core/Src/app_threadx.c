@@ -23,7 +23,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "can_publisher.h"
 #include "can_unpack.h"
 /* USER CODE END Includes */
 
@@ -44,7 +43,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-static publisher_context_t pub_context;
 static unpack_context_t unpack_context;
 /* USER CODE END PV */
 
@@ -66,16 +64,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     /* USER CODE BEGIN App_ThreadX_Init */
     (void)byte_pool;
 
-    ret = can_publisher_init(&pub_context, byte_pool);
-    if (ret != TX_SUCCESS)
-    {
-        return ret;
-    }
-    ret = unpack_init(&unpack_context, byte_pool, get_can_pub_queue_ptr(&pub_context));
-    if (ret != TX_SUCCESS)
-    {
-        return ret;
-    }
+    ret = unpack_init(&unpack_context, byte_pool);
 
     /* USER CODE END App_ThreadX_Init */
 
