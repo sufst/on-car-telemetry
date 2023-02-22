@@ -103,8 +103,8 @@ void queue_receive_thread_entry(ULONG input)
         rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
 
         /* Find the can handler of matching identifier */
-        int i = 0;
-        for(; i<=TABLE_SIZE; i++)
+        int id = 0;
+        for(; id<=TABLE_SIZE; id++)
         {
             handlerunpack = (can_handler_t *) can_handler_get(i);
             
@@ -113,7 +113,7 @@ void queue_receive_thread_entry(ULONG input)
               break;
             }
             /* Couldn't find matching identifier - deassign pointer. */
-            if(i == TABLE_SIZE)handlerunpack = NULL;
+            if(id == TABLE_SIZE)handlerunpack = NULL;
         }
         /* Skip frame if couldn't find matching identifier. */
         if(handlerunpack == NULL)
@@ -121,20 +121,21 @@ void queue_receive_thread_entry(ULONG input)
           continue;
         }
         /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
-        l_timestamp = ts_table[i];
+        /* This part will not be needed when this feature will be implemented in rtcan */
+        l_timestamp = ts_table[id];
         c_timestamp = tx_time_get();
         if (c_timestamp - l_timestamp < 50)
         {
           continue;
         }
-        ts_table[i] = c_timestamp;
+        ts_table[id] = c_timestamp;
 
         /* Fill pdu_struct data buffer */
         handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg.data, rx_msg.length);
 
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
-        pdu_struct.ID = 0; /* Assign PDU ID */
+        pdu_struct.ID = id; /* Assign PDU ID */
         pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
 
         /* Send pdu packet through UART */
