@@ -1,5 +1,7 @@
 #include <tx_api.h>
 #include "can_publisher.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #define QUEUE_SEND_THREAD_PRIORITY             10
 #define QUEUE_SEND_THREAD_STACK_SIZE           1024
@@ -50,6 +52,37 @@ UINT can_publisher_init(publisher_context_t* publisher_ptr, TX_BYTE_POOL* stack_
     return tx_status;
 }
 
+void *dummy_queue(int *res)
+{
+    char filename[] = "dummy_queue.csv"; // replace with your own file name
+    char row[MAXCHAR];
+    int i = 0;
+    char *token;
+
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Error opening file.");
+        return;
+    }
+
+    while (feof(file) != true)
+    {
+        fgets(row, MAXCHAR, file);
+        printf("Row: %s", row);
+
+        while(token != NULL)
+        {
+            printf("Token: %s\n", token);
+            token = strtok(NULL, ",");
+            res[i] = strtol(token);
+            i++;
+        }
+
+    }
+
+    fclose(file);
+}
+
 void queue_send_thread_entry(ULONG input)
 {
     publisher_context_t* publisher_ptr = (publisher_context_t*) input;
@@ -64,10 +97,11 @@ void queue_send_thread_entry(ULONG input)
     queue_data.identifier = CAN_DATABASE_PM100_VOLTAGE_INFO_FRAME_ID;
     queue_data.length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
 
-    for(int i = 0; i<8; i++)
-    {
-        queue_data.data[i] = i;
-    }
+    // for(int i = 0; i<8; i++)
+    // {
+    //     queue_data.data[i] = i;
+    // }
+    dummy_queue(&queue_data.data);
 
     // Send the data to the queue.
     UINT ret = tx_queue_send(&publisher_ptr->tx_queue, (rtcan_msg_t*) &queue_data, TX_WAIT_FOREVER);
