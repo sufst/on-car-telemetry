@@ -4,7 +4,6 @@
 
 - [About](#about)
 - [Development Environment](#development-environment)
-- [Contributing](#contributing)
 - [Useful Resources](#useful-resources)
 - [Related Projects](#related-projects)
 
@@ -80,13 +79,6 @@ To minimise the chance of merge conflicts, changes to the `.ioc` should be made
 as infrequently as possible as the `.ioc` format is not well suited to version
 control.
 
-# Contributing
-
-Before contributing to this project, make sure to familiarise yourself with the
-[project-specific contributing guidelines](.github/CONTRIBUTING_EXTRA.md). Until
-the STAG 9 codebase is stable, all branches should be created from and merged
-back into `develop`.
-
 # Useful Resources
 
 Microcontroller:
@@ -99,17 +91,9 @@ ThreadX RTOS:
 - [ThreadX Overview](https://docs.microsoft.com/en-us/azure/rtos/threadx/overview-threadx)
 - [ThreadX API](https://docs.microsoft.com/en-us/azure/rtos/threadx/chapter4)
 
-CAN:
-
-- [Cascadia Motion CAN Protocol](https://app.box.com/s/vf9259qlaadhzxqiqrt5cco8xpsn84hk/file/27334613044)
-
 Xbee:
 
 - [Xbee Pro S2C Zigbee](https://www.digi.com/resources/documentation/digidocs/pdfs/90002002.pdf)
-
-GPS:
-
-- [Todo](Todo)
 
 # Related Projects
 
