@@ -1,4 +1,4 @@
-<h1 align="center"> VCU - Vehicle Control Unit </h2>
+<h1 align="center"> OCT - On-Car Telemetry </h2>
 
 # Table of Contents
 
