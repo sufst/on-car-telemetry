@@ -82,7 +82,6 @@ void queue_receive_thread_entry(ULONG input)
 
     can_handler_t* handlerunpack = NULL;
     rtcan_msg_t* rx_msg_ptr;
-    rtcan_msg_t rx_msg;
     pdu_t pdu_struct;
     uint32_t l_timestamp, c_timestamp;
     
@@ -98,10 +97,6 @@ void queue_receive_thread_entry(ULONG input)
         {
             return;
         }
-        memcpy((void*) rx_msg.data, (void*) rx_msg_ptr->data, rx_msg_ptr->length);
-
-        // mark the original received message as consumed
-        rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
 
         /* Find the can handler of matching identifier */
         int id = 0;
@@ -109,7 +104,7 @@ void queue_receive_thread_entry(ULONG input)
         {
             handlerunpack = (can_handler_t *) can_handler_get(i);
             
-            if(rx_msg.identifier == handlerunpack->identifier)
+            if(rx_msg_ptr->identifier == handlerunpack->identifier)
             {
               break;
             }
@@ -135,7 +130,10 @@ void queue_receive_thread_entry(ULONG input)
         ts_table[id] = c_timestamp;
 
         /* Fill pdu_struct data buffer */
-        handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg.data, rx_msg.length);
+        handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg_ptr->data, rx_msg_ptr->length);
+
+        // mark the original received message as consumed
+        rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
 
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
