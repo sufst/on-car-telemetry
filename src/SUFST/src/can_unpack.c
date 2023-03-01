@@ -48,7 +48,7 @@ rtcan_status_t can_status;
     if (tx_status == TX_SUCCESS)
     {
         tx_status = tx_queue_create(&unpack_ptr->rx_queue,
-                    "My Rx Queue",
+                    "Unpack Rx Queue",
                     TX_1_ULONG,
                     unpack_ptr->rx_queue_mem,
                     sizeof(unpack_ptr->rx_queue));        
