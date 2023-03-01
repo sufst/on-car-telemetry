@@ -14,8 +14,8 @@
 #define STATS_TIMER_SECONDS                 STATS_TIMER_TICKS/100
 
 void queue_receive_thread_entry(ULONG input);
-void stats_init(unpack_performace_t* stats);
-void timer_callback(unpack_performace_t* stats);
+void stats_init(unpack_performance_t* stats);
+void timer_callback(unpack_performance_t* stats);
 
 UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr){
 
@@ -179,7 +179,7 @@ void queue_receive_thread_entry(ULONG input)
     }
 }
 
-void stats_init(unpack_performace_t* stats)
+void stats_init(unpack_performance_t* stats)
 {
     stats->rx_can_bps = 0;
     stats->rx_can_count = 0;
@@ -189,7 +189,7 @@ void stats_init(unpack_performace_t* stats)
     stats->txbits = 0;
 }
 
-void timer_callback(unpack_performace_t* stats)
+void timer_callback(unpack_performance_t* stats)
 {
     stats->rx_can_bps = stats->rxbits / STATS_TIMER_SECONDS; /* Amount of bits received per second */
     stats->tx_pdu_bps = stats->txbits / STATS_TIMER_SECONDS; /* Amount of bits sent per second */

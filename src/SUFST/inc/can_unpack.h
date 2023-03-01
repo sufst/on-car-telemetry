@@ -16,7 +16,7 @@ typedef struct {
   int32_t tx_pdu_count;
   int32_t tx_pdu_bps;
   int32_t txbits;
-} unpack_performace_t;
+} unpack_performance_t;
 
 typedef struct {
 
@@ -28,7 +28,7 @@ typedef struct {
 
   rtcan_handle_t rtcan;
 
-  unpack_performace_t stats;
+  unpack_performance_t stats;
 
 } unpack_context_t;
 
