@@ -16,6 +16,7 @@ void queue_receive_thread_entry(ULONG input);
 UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr){
 
 VOID* thread_stack_ptr = NULL;
+rtcan_status_t can_status;
 
     // initialise RTCAN instance
     UINT tx_status = rtcan_init(&unpack_ptr->rtcan, 
@@ -58,21 +59,21 @@ VOID* thread_stack_ptr = NULL;
     {
         for(int i = 0; i < TABLE_SIZE; i++)
         {
-            tx_status = rtcan_subscribe(&unpack_ptr->rtcan, can_handler_get(i)->identifier , &unpack_ptr->rx_queue);
-            if(tx_status != RTCAN_OK)
+            can_status = rtcan_subscribe(&unpack_ptr->rtcan, can_handler_get(i)->identifier , &unpack_ptr->rx_queue);
+            if(can_status != RTCAN_OK)
             {
-                break;
+                break; /* TODO: Add error handling */
             }
         }
     }
 
-    if(tx_status == RTCAN_OK)
+    if(can_status == RTCAN_OK)
     {
-        tx_status = rtcan_start(&unpack_ptr->rtcan);
+        can_status = rtcan_start(&unpack_ptr->rtcan);
     }
 
     // start the RTCAN service
-    return tx_status;
+    return can_status;
 }
 
 void queue_receive_thread_entry(ULONG input)
