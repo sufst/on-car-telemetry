@@ -12,6 +12,7 @@
 
 The On-Car-Telemetry is reponsible for unpacking CAN data from CAN-S and CAN-C into PDU
 (Protocol Data Unit) telemetry frames and sending it via UART to the Xbee transmitter.
+Xbee provides the bidirectional transmission between Intermediate server and On-Car Telemetry Unit.
 The microcontroller used in this project is the STM32 F446RE.
 
 More detailed information about this project is available to members on the
