@@ -114,7 +114,10 @@ void queue_receive_thread_entry(ULONG input)
               break;
             }
             /* Couldn't find matching identifier - deassign pointer. */
-            if(id == TABLE_SIZE)handlerunpack = NULL;
+            if(id == TABLE_SIZE)
+            {
+              handlerunpack = NULL;
+            }
         }
         /* Skip frame if couldn't find matching identifier. */
         if(handlerunpack == NULL)
