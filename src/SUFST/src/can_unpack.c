@@ -117,6 +117,8 @@ void queue_receive_thread_entry(ULONG input)
         /* Skip frame if couldn't find matching identifier. */
         if(handlerunpack == NULL)
         {
+          // mark the original received message as consumed
+          rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
           continue;
         }
         /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
@@ -125,6 +127,8 @@ void queue_receive_thread_entry(ULONG input)
         c_timestamp = tx_time_get();
         if (c_timestamp - l_timestamp < 50)
         {
+          // mark the original received message as consumed
+          rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
           continue;
         }
         ts_table[id] = c_timestamp;
@@ -143,8 +147,9 @@ void queue_receive_thread_entry(ULONG input)
         /* Send pdu packet through UART */
         HAL_StatusTypeDef status = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
 
-        if(status != HAL_OK){
-            return;
+        if(status != HAL_OK)
+        {
+          return;
         }
     }
 }
