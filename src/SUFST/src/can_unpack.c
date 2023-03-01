@@ -3,25 +3,28 @@
 #include "can_handlers.h"
 #include "can_unpack.h"
 #include "usart.h"
+#include "rtcan.h"
+#include "can.h"
 
+#define RTCAN_THREAD_PRIORITY   3
 #define QUEUE_RX_THREAD_PRIORITY             10
 #define QUEUE_RX_THREAD_STACK_SIZE           1024
 #define QUEUE_RX_THREAD_PREEMPTION_THRESHOLD 10
 
 void queue_receive_thread_entry(ULONG input);
 
-UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr, TX_QUEUE * can_queue){
+UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr){
 
 VOID* thread_stack_ptr = NULL;
-unpack_ptr->rx_queue = can_queue;
-/* Setup transmit queue */
-    UINT tx_status = tx_queue_create(&unpack_ptr->tx_queue,
-                                     "SPI Data Receive Queue",
-                                     sizeof(pdu_t)/sizeof(ULONG),
-                                     &unpack_ptr->tx_queue_mem,
-                                     PDU_TX_QUEUE_SIZE * sizeof(pdu_t));
+rtcan_status_t can_status;
 
-    if(tx_status == TX_SUCCESS)
+    // initialise RTCAN instance
+    UINT tx_status = rtcan_init(&unpack_ptr->rtcan, 
+               &hcan1, 
+               RTCAN_THREAD_PRIORITY, 
+               stack_pool_ptr);
+
+    if(tx_status == RTCAN_OK)
     {
         tx_status = tx_byte_allocate(stack_pool_ptr,
                                 &thread_stack_ptr,
@@ -42,8 +45,35 @@ unpack_ptr->rx_queue = can_queue;
                                TX_NO_TIME_SLICE,
                                TX_AUTO_START);
     }
+    if (tx_status == TX_SUCCESS)
+    {
+        tx_status = tx_queue_create(&unpack_ptr->rx_queue,
+                    "Unpack Rx Queue",
+                    TX_1_ULONG,
+                    unpack_ptr->rx_queue_mem,
+                    sizeof(unpack_ptr->rx_queue));        
+    }
+    
+    // subscribe to a message
+    if (tx_status == TX_SUCCESS)
+    {
+        for(int i = 0; i < TABLE_SIZE; i++)
+        {
+            can_status = rtcan_subscribe(&unpack_ptr->rtcan, can_handler_get(i)->identifier , &unpack_ptr->rx_queue);
+            if(can_status != RTCAN_OK)
+            {
+                break; /* TODO: Add error handling */
+            }
+        }
+    }
 
-    return tx_status;
+    if(can_status == RTCAN_OK)
+    {
+        can_status = rtcan_start(&unpack_ptr->rtcan);
+    }
+
+    // start the RTCAN service
+    return can_status;
 }
 
 void queue_receive_thread_entry(ULONG input)
@@ -51,7 +81,7 @@ void queue_receive_thread_entry(ULONG input)
     unpack_context_t* unpack_ptr = (unpack_context_t *) input;
 
     can_handler_t* handlerunpack = NULL;
-    rtcan_msg_t rx_msg;
+    rtcan_msg_t* rx_msg_ptr;
     pdu_t pdu_struct;
     uint32_t l_timestamp, c_timestamp;
     
@@ -59,61 +89,67 @@ void queue_receive_thread_entry(ULONG input)
     {
         int ret;
         
-
         /* Receive data from the queue. */
-        ret = tx_queue_receive(unpack_ptr->rx_queue, &rx_msg, TX_WAIT_FOREVER);
+        ret = tx_queue_receive(&unpack_ptr->rx_queue,
+                                    (void *) &rx_msg_ptr,
+                                    TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
             return;
         }
+
         /* Find the can handler of matching identifier */
-        int i = 0;
-        for(; i<=TABLE_SIZE; i++)
+        int id = 0;
+        for(; id<=TABLE_SIZE; id++)
         {
-            handlerunpack = (can_handler_t *) can_handler_get(i);
+            handlerunpack = (can_handler_t *) can_handler_get(id);
             
-            if(rx_msg.identifier == handlerunpack->identifier)
+            if(rx_msg_ptr->identifier == handlerunpack->identifier)
             {
               break;
             }
             /* Couldn't find matching identifier - deassign pointer. */
-            if(i == TABLE_SIZE)handlerunpack = NULL;
+            if(id == TABLE_SIZE)
+            {
+              handlerunpack = NULL;
+            }
         }
         /* Skip frame if couldn't find matching identifier. */
         if(handlerunpack == NULL)
         {
+          // mark the original received message as consumed
+          rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
           continue;
         }
         /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
-        l_timestamp = ts_table[i];
+        /* This part will not be needed when this feature will be implemented in rtcan */
+        l_timestamp = ts_table[id];
         c_timestamp = tx_time_get();
         if (c_timestamp - l_timestamp < 50)
         {
+          // mark the original received message as consumed
+          rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
           continue;
         }
-        ts_table[i] = c_timestamp;
+        ts_table[id] = c_timestamp;
 
         /* Fill pdu_struct data buffer */
-        handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg.data, rx_msg.length);
+        handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg_ptr->data, rx_msg_ptr->length);
+
+        // mark the original received message as consumed
+        rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
 
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
-        pdu_struct.ID = 0; /* Assign PDU ID */
+        pdu_struct.ID = id; /* Assign PDU ID */
         pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
 
-        /* Ready bitstream to be sent by SPI. */
-        /*
-        ret = tx_queue_send(&unpack_ptr->tx_queue, (pdu_t*) &pdu_struct, TX_WAIT_FOREVER);
-        if (ret != TX_SUCCESS)
-        {
-            return;
-        }
-        */
         /* Send pdu packet through UART */
         HAL_StatusTypeDef status = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
 
-        if(status != HAL_OK){
-            return;
+        if(status != HAL_OK)
+        {
+          return;
         }
     }
 }
