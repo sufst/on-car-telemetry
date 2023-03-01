@@ -174,8 +174,8 @@ void queue_receive_thread_entry(ULONG input)
           return;
         }
         /* For statistic */
-        unpack_ptr->stats.tx_pdu_count;
-        unpack_ptr->stats.txbits += (sizeof(pdu_struct) * 8);       
+        unpack_ptr->stats.tx_pdu_count++;
+        unpack_ptr->stats.txbits += (sizeof(pdu_struct) * 8);     
     }
 }
 
