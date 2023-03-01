@@ -17,6 +17,6 @@ typedef struct {
 } publisher_context_t;
 
 UINT can_publisher_init(publisher_context_t* publisher_ptr, TX_BYTE_POOL* stack_pool_ptr);
-TX_QUEUE * get_can_pub_queue_ptr(publisher_context_t* pub_context);
+TX_QUEUE * can_publisher_get_queue_ptr(publisher_context_t* pub_context);
 
 #endif /* CAN_PUBLISHER_H */
