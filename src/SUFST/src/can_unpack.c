@@ -102,7 +102,7 @@ void queue_receive_thread_entry(ULONG input)
         int id = 0;
         for(; id<=TABLE_SIZE; id++)
         {
-            handlerunpack = (can_handler_t *) can_handler_get(i);
+            handlerunpack = (can_handler_t *) can_handler_get(id);
             
             if(rx_msg_ptr->identifier == handlerunpack->identifier)
             {
