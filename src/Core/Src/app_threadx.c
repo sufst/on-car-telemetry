@@ -58,19 +58,18 @@ static unpack_context_t unpack_context;
   */
 UINT App_ThreadX_Init(VOID *memory_ptr)
 {
-    UINT ret = TX_SUCCESS;
-    TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
+  UINT ret = TX_SUCCESS;
+  TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
 
-    /* USER CODE BEGIN App_ThreadX_Init */
+  /* USER CODE BEGIN App_ThreadX_Init */
     (void)byte_pool;
 
     ret = unpack_init(&unpack_context, byte_pool);
 
-    /* USER CODE END App_ThreadX_Init */
+  /* USER CODE END App_ThreadX_Init */
 
-    return ret;
+  return ret;
 }
-
 
 /**
   * @brief  MX_ThreadX_Init
