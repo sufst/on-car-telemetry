@@ -10,12 +10,12 @@
 #define QUEUE_RX_THREAD_PRIORITY             10
 #define QUEUE_RX_THREAD_STACK_SIZE           1024
 #define QUEUE_RX_THREAD_PREEMPTION_THRESHOLD 10
-#define STATS_TIMER_TICKS                    100
-#define STATS_TIMER_SECONDS                 STATS_TIMER_TICKS/100
+#define STATS_TIMER_SECONDS                  1
+#define STATS_TIMER_TICKS                    STATS_TIMER_SECONDS * TX_TIMER_TICKS_PER_SECOND
 
-void queue_receive_thread_entry(ULONG input);
-void stats_init(unpack_performance_t* stats);
-void timer_callback(unpack_performance_t* stats);
+static void queue_receive_thread_entry(ULONG input);
+static void stats_init(unpack_performance_t* stats);
+static void stats_timer_callback(unpack_performance_t* stats);
 
 UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr){
 
@@ -63,12 +63,20 @@ rtcan_status_t can_status;
     {
         tx_status =  tx_timer_create(&unpack_ptr->stats.bps_timer,
               "Data statistic timer",
-              timer_callback,
+              stats_timer_callback,
               &unpack_ptr->stats,
               STATS_TIMER_TICKS,
               STATS_TIMER_TICKS,
               TX_AUTO_ACTIVATE);
     }
+    /* Init mutex */
+    if(tx_status == TX_SUCCESS)
+    {
+        tx_status =  tx_mutex_create(&unpack_ptr->stats.stats_mutex,
+              "Stats mutex",
+              TX_INHERIT);
+    }
+
 
     /* Subscribe to can messages*/
     if (tx_status == TX_SUCCESS)
@@ -118,8 +126,10 @@ void queue_receive_thread_entry(ULONG input)
             return;
         }
         /* For statistic */
+        tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
         unpack_ptr->stats.rx_can_count++;
-        unpack_ptr->stats.rxbits += sizeof(*rx_msg_ptr);
+        unpack_ptr->stats.rxbytes += rx_msg_ptr->length;
+        tx_mutex_put(&unpack_ptr->stats.stats_mutex);
         /* Find the can handler of matching identifier */
         int id = 0;
         for(; id<=TABLE_SIZE; id++)
@@ -174,8 +184,10 @@ void queue_receive_thread_entry(ULONG input)
           return;
         }
         /* For statistic */
+        tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
         unpack_ptr->stats.tx_pdu_count++;
-        unpack_ptr->stats.txbits += (sizeof(pdu_struct) * 8);     
+        unpack_ptr->stats.txbytes += sizeof(pdu_struct);
+        tx_mutex_put(&unpack_ptr->stats.stats_mutex);    
     }
 }
 
@@ -185,16 +197,16 @@ void stats_init(unpack_performance_t* stats)
     stats->rx_can_count = 0;
     stats->tx_pdu_bps = 0;
     stats->tx_pdu_count = 0;
-    stats->rxbits = 0;
-    stats->txbits = 0;
+    stats->rxbytes = 0;
+    stats->txbytes = 0;
 }
 
-void timer_callback(unpack_performance_t* stats)
+void stats_timer_callback(unpack_performance_t* stats)
 {
-    stats->rx_can_bps = stats->rxbits / STATS_TIMER_SECONDS; /* Amount of bits received per second */
-    stats->tx_pdu_bps = stats->txbits / STATS_TIMER_SECONDS; /* Amount of bits sent per second */
+    stats->rx_can_bps = stats->rxbytes * 8 / STATS_TIMER_SECONDS; /* Amount of bits received per second */
+    stats->tx_pdu_bps = stats->txbytes * 8 / STATS_TIMER_SECONDS; /* Amount of bits sent per second */
 
     /* Set counter to zeroes */
-    stats->rxbits = 0;
-    stats->txbits = 0;
+    stats->rxbytes = 0;
+    stats->txbytes = 0;
 }

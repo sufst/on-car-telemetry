@@ -9,13 +9,14 @@
 
 typedef struct {
 
-  TX_TIMER bps_timer;
-  int32_t rx_can_count;
-  int32_t rx_can_bps;
-  int32_t rxbits;
-  int32_t tx_pdu_count;
-  int32_t tx_pdu_bps;
-  int32_t txbits;
+  TX_TIMER bps_timer; /* Timer definition */
+  TX_MUTEX stats_mutex; /* Mutex definition */
+  int32_t rx_can_count; /* Received can frames */
+  int32_t rx_can_bps; /* Received bits per second */
+  int32_t rxbytes;
+  int32_t tx_pdu_count; /* Transmitted pdu frames */
+  int32_t tx_pdu_bps; /* Transmitted bits per second */
+  int32_t txbytes;
 } unpack_performance_t;
 
 typedef struct {
