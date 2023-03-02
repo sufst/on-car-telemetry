@@ -12,10 +12,11 @@
 #define QUEUE_RX_THREAD_PREEMPTION_THRESHOLD 10
 #define STATS_TIMER_SECONDS                  1
 #define STATS_TIMER_TICKS                    STATS_TIMER_SECONDS * TX_TIMER_TICKS_PER_SECOND
+const uint32_t BITS_PER_BYTE = 8;
 
 static void queue_receive_thread_entry(ULONG input);
-static void stats_init(unpack_performance_t* stats);
-static void stats_timer_callback(unpack_performance_t* stats);
+static void stats_init(unpack_stats_t* stats);
+static void stats_timer_callback(unpack_stats_t* stats);
 
 UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr){
 
@@ -77,7 +78,6 @@ rtcan_status_t can_status;
               TX_INHERIT);
     }
 
-
     /* Subscribe to can messages*/
     if (tx_status == TX_SUCCESS)
     {
@@ -128,7 +128,7 @@ void queue_receive_thread_entry(ULONG input)
         /* For statistic */
         tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
         unpack_ptr->stats.rx_can_count++;
-        unpack_ptr->stats.rxbytes += rx_msg_ptr->length;
+        unpack_ptr->stats.rx_bytes += rx_msg_ptr->length;
         tx_mutex_put(&unpack_ptr->stats.stats_mutex);
         /* Find the can handler of matching identifier */
         int id = 0;
@@ -186,27 +186,29 @@ void queue_receive_thread_entry(ULONG input)
         /* For statistic */
         tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
         unpack_ptr->stats.tx_pdu_count++;
-        unpack_ptr->stats.txbytes += sizeof(pdu_struct);
+        unpack_ptr->stats.tx_bytes += sizeof(pdu_struct);
         tx_mutex_put(&unpack_ptr->stats.stats_mutex);    
     }
 }
 
-void stats_init(unpack_performance_t* stats)
+void stats_init(unpack_stats_t* stats)
 {
     stats->rx_can_bps = 0;
     stats->rx_can_count = 0;
     stats->tx_pdu_bps = 0;
     stats->tx_pdu_count = 0;
-    stats->rxbytes = 0;
-    stats->txbytes = 0;
+    stats->rx_bytes = 0;
+    stats->tx_bytes = 0;
 }
 
-void stats_timer_callback(unpack_performance_t* stats)
+void stats_timer_callback(unpack_stats_t* stats)
 {
-    stats->rx_can_bps = stats->rxbytes * 8 / STATS_TIMER_SECONDS; /* Amount of bits received per second */
-    stats->tx_pdu_bps = stats->txbytes * 8 / STATS_TIMER_SECONDS; /* Amount of bits sent per second */
+    tx_mutex_get(&stats->stats_mutex,TX_WAIT_FOREVER);
+    stats->rx_can_bps = (stats->rx_bytes * BITS_PER_BYTE) / STATS_TIMER_SECONDS; /* Amount of bits received per second */
+    stats->tx_pdu_bps = (stats->tx_bytes * BITS_PER_BYTE) / STATS_TIMER_SECONDS; /* Amount of bits sent per second */
 
     /* Set counter to zeroes */
-    stats->rxbytes = 0;
-    stats->txbytes = 0;
+    stats->rx_bytes = 0;
+    stats->tx_bytes = 0;
+    tx_mutex_put(&stats->stats_mutex);
 }
