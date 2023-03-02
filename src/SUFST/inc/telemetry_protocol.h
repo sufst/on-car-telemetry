@@ -2,9 +2,7 @@
 #define CAN_TELEMETRY_H
 
 #include <stdint.h>
-#include <can_database.h>
-
-#define TABLE_SIZE 23
+#include <can_handlers.h>
 
 /**
  * @brief  Frame Header
@@ -51,6 +49,6 @@ typedef struct
 /**
  * @brief   Table of CAN message IDs and associated unpacking functions
  */
-static uint32_t ts_table[TABLE_SIZE] = {0};
+static uint32_t ts_table[CAN_HANDLERS_TABLE_SIZE] = {0};
 
 #endif /* CAN_TELEMETRY_H */

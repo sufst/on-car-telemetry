@@ -81,7 +81,7 @@ rtcan_status_t can_status;
     /* Subscribe to can messages*/
     if (tx_status == TX_SUCCESS)
     {
-        for(int i = 0; i < TABLE_SIZE; i++)
+        for(int i = 0; i < CAN_HANDLERS_TABLE_SIZE; i++)
         {
             can_status = rtcan_subscribe(&unpack_ptr->rtcan, can_handler_get(i)->identifier , &unpack_ptr->rx_queue);
             if(can_status != RTCAN_OK)
@@ -131,17 +131,17 @@ void queue_receive_thread_entry(ULONG input)
         unpack_ptr->stats.rx_bytes += rx_msg_ptr->length;
         tx_mutex_put(&unpack_ptr->stats.stats_mutex);
         /* Find the can handler of matching identifier */
-        int id = 0;
-        for(; id<=TABLE_SIZE; id++)
+        int index = 0;
+        for(; index<=CAN_HANDLERS_TABLE_SIZE; index++)
         {
-            handlerunpack = (can_handler_t *) can_handler_get(id);
+            handlerunpack = (can_handler_t *) can_handler_get(index);
             
             if(rx_msg_ptr->identifier == handlerunpack->identifier)
             {
               break;
             }
             /* Couldn't find matching identifier - deassign pointer. */
-            if(id == TABLE_SIZE)
+            if(index == CAN_HANDLERS_TABLE_SIZE)
             {
               handlerunpack = NULL;
             }
@@ -155,7 +155,7 @@ void queue_receive_thread_entry(ULONG input)
         }
         /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
         /* This part will not be needed when this feature will be implemented in rtcan */
-        l_timestamp = ts_table[id];
+        l_timestamp = ts_table[index];
         c_timestamp = tx_time_get();
         if (c_timestamp - l_timestamp < 50)
         {
@@ -163,7 +163,7 @@ void queue_receive_thread_entry(ULONG input)
           rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
           continue;
         }
-        ts_table[id] = c_timestamp;
+        ts_table[index] = c_timestamp;
         
         /* Fill pdu_struct data buffer */
         handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg_ptr->data, rx_msg_ptr->length);
@@ -173,7 +173,7 @@ void queue_receive_thread_entry(ULONG input)
 
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
-        pdu_struct.ID = id; /* Assign PDU ID */
+        pdu_struct.ID = handlerunpack->pdu_id; /* Assign PDU ID */
         pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
 
         /* Send pdu packet through UART */
