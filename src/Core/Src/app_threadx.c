@@ -24,7 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "can_unpack.h"
-#include "watchdog.h"
+#include "error_handler.h"
 #include "can.h"
 /* USER CODE END Includes */
 
@@ -46,7 +46,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 static unpack_context_t unpack_context;
-static watchdog_context_t watchdog_context;
+static error_handler_context_t error_handler_context;
 static rtcan_handle_t rtcan;
 /* USER CODE END PV */
 
@@ -68,12 +68,12 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   /* USER CODE BEGIN App_ThreadX_Init */
     (void)byte_pool;
 
-    ret = unpack_init(&unpack_context, &watchdog_context, byte_pool, &rtcan);
+    ret = unpack_init(&unpack_context, &error_handler_context, byte_pool, &rtcan);
 
 
     if(ret == TX_SUCCESS)
     {
-      ret = watchdog_init(&watchdog_context, byte_pool);
+      ret = error_handler_init(&error_handler_context, byte_pool);
     }
   /* USER CODE END App_ThreadX_Init */
 

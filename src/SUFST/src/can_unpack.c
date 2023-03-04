@@ -1,5 +1,5 @@
 #include <tx_api.h>
-#include "watchdog.h"
+#include "error_handler.h"
 #include "can_handlers.h"
 #include "can_unpack.h"
 #include "usart.h"
@@ -18,14 +18,14 @@ static void queue_receive_thread_entry(ULONG input);
 static void stats_init(unpack_stats_t* stats);
 static void stats_timer_callback(unpack_stats_t* stats);
 
-UINT unpack_init(unpack_context_t* unpack_ptr, watchdog_context_t* watchdog_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan){
+UINT unpack_init(unpack_context_t* unpack_ptr, error_handler_context_t* error_handler_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan){
 
 
 VOID* thread_stack_ptr = NULL;
 rtcan_status_t can_status;
 UINT tx_status;
 
-    unpack_ptr->watchdog = watchdog_context;
+    unpack_ptr->error_handler = error_handler_context;
 
 unpack_ptr->rtcan = rtcan;
 
@@ -89,7 +89,7 @@ unpack_ptr->rtcan = rtcan;
     /* Error handling - Can Unpack Thread Initialisation failed */
     if(tx_status != TX_SUCCESS)
     {
-        critical_error(&unpack_ptr->thread, CAN_UNPACK_ERROR_INIT, unpack_ptr->watchdog);
+        critical_error(&unpack_ptr->thread, CAN_UNPACK_ERROR_INIT, unpack_ptr->error_handler);
         return tx_status;
     }
 
@@ -102,7 +102,7 @@ unpack_ptr->rtcan = rtcan;
             if(can_status != RTCAN_OK)
             {
                 /* Error handling - rtcan_subscribe failed */
-                critical_error(&unpack_ptr->thread, RTCAN_SUBSCRIBE_ERROR_INIT, unpack_ptr->watchdog);
+                critical_error(&unpack_ptr->thread, RTCAN_SUBSCRIBE_ERROR_INIT, unpack_ptr->error_handler);
                 /* Do soft reset? */
                 return tx_status;
             }
@@ -124,7 +124,7 @@ unpack_ptr->rtcan = rtcan;
     {
         /* Error handling - rtcan_start failed */
         /* @rureverek: Try reset instead? */
-        critical_error(&unpack_ptr->thread, RTCAN_START_ERROR, unpack_ptr->watchdog);
+        critical_error(&unpack_ptr->thread, RTCAN_START_ERROR, unpack_ptr->error_handler);
         /* Do soft reset? */
     }
 
@@ -151,7 +151,7 @@ void queue_receive_thread_entry(ULONG input)
                                     TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
-            critical_error(&unpack_ptr->thread, CAN_RX_QUEUE_ERROR, unpack_ptr->watchdog);
+            critical_error(&unpack_ptr->thread, CAN_RX_QUEUE_ERROR, unpack_ptr->error_handler);
             return;
         }
 
@@ -159,7 +159,7 @@ void queue_receive_thread_entry(ULONG input)
         ret = tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
-            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->watchdog);
+            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
             return;
         }
 
@@ -169,7 +169,7 @@ void queue_receive_thread_entry(ULONG input)
         ret = tx_mutex_put(&unpack_ptr->stats.stats_mutex);
         if (ret != TX_SUCCESS)
         {
-            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->watchdog);
+            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
             return;
         }
         
@@ -250,7 +250,7 @@ void queue_receive_thread_entry(ULONG input)
             ret = tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
             if (ret != TX_SUCCESS)
             {
-                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->watchdog);
+                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
                 return;
             }
             unpack_ptr->stats.tx_pdu_count++;
@@ -259,7 +259,7 @@ void queue_receive_thread_entry(ULONG input)
             ret = tx_mutex_put(&unpack_ptr->stats.stats_mutex);    
             if (ret != TX_SUCCESS)
             {
-                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->watchdog);
+                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
                 return;
             }
 
