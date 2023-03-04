@@ -50,8 +50,12 @@ static rtcan_handle_t rtcan;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef* can_h);
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef* can_h);
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef* can_h);
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* can_h);
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef* can_h);
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef* can_h);
 /* USER CODE END PFP */
 
 /**
@@ -93,6 +97,21 @@ void MX_ThreadX_Init(void)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_tx_mailbox_callback(&rtcan, can_h);
+}
+
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_tx_mailbox_callback(&rtcan, can_h);
+}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_tx_mailbox_callback(&rtcan, can_h);
+}
+
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* can_h)
 {
     rtcan_handle_rx_it(&rtcan, can_h, 0);
@@ -101,5 +120,10 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* can_h)
 void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef* can_h)
 {
     rtcan_handle_rx_it(&rtcan, can_h, 1);
+}
+
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_hal_error(&rtcan, can_h);
 }
 /* USER CODE END 1 */
