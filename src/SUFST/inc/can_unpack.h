@@ -4,7 +4,7 @@
 #include "telemetry_protocol.h"
 #include "rtcan.h"
 #include <stdint.h>
-#include "fail.h"
+#include "watchdog.h"
 
 #define CAN_PUBLISHER_RX_QUEUE_SIZE 10 //TODO: add config.h storing such values to avoid redefinition.
 

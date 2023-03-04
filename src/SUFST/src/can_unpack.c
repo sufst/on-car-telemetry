@@ -1,5 +1,5 @@
 #include <tx_api.h>
-#include "fail.h"
+#include "watchdog.h"
 #include "can_handlers.h"
 #include "can_unpack.h"
 #include "usart.h"

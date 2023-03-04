@@ -1,6 +1,5 @@
 #include <tx_api.h>
 #include "watchdog.h"
-#include "fail.h"
 #include "main.h"
 
 #define WATCHDOG_THREAD_PRIORITY             10
@@ -82,5 +81,13 @@ static void watchdog_thread_entry(ULONG input)
         // Introduce 500ms delay
         tx_thread_sleep(50);
     }
+
+}
+
+void critical_error(uint32_t error_code, watchdog_context_t* watchdog)
+{
+
+watchdog->error_code = error_code;
+tx_semaphore_put(&watchdog->fault_semaphore);
 
 }
