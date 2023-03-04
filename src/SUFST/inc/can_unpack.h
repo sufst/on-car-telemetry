@@ -28,7 +28,7 @@ typedef struct {
 
   rtcan_msg_t* rx_queue_mem[CAN_PUBLISHER_RX_QUEUE_SIZE];
 
-  rtcan_handle_t rtcan;
+  rtcan_handle_t* rtcan;
 
   unpack_stats_t stats;
 
@@ -36,6 +36,6 @@ typedef struct {
 
 } unpack_context_t;
 
-UINT unpack_init(unpack_context_t* unpack_ptr, watchdog_context_t* watchdog_context, TX_BYTE_POOL* stack_pool_ptr);
+UINT unpack_init(unpack_context_t* unpack_ptr, watchdog_context_t* watchdog_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan);
 
 #endif /* CAN_UNPACK_H */

@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "can_unpack.h"
 #include "watchdog.h"
+#include "can.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +47,7 @@
 /* USER CODE BEGIN PV */
 static unpack_context_t unpack_context;
 static watchdog_context_t watchdog_context;
+static rtcan_handle_t rtcan;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -66,7 +68,8 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   /* USER CODE BEGIN App_ThreadX_Init */
     (void)byte_pool;
 
-    ret = unpack_init(&unpack_context, &watchdog_context, byte_pool);
+    ret = unpack_init(&unpack_context, &watchdog_context, byte_pool, &rtcan);
+
 
     if(ret == TX_SUCCESS)
     {
@@ -96,5 +99,33 @@ void MX_ThreadX_Init(void)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_tx_mailbox_callback(&rtcan, can_h);
+}
 
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_tx_mailbox_callback(&rtcan, can_h);
+}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_tx_mailbox_callback(&rtcan, can_h);
+}
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_rx_it(&rtcan, can_h, 0);
+}
+
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_rx_it(&rtcan, can_h, 1);
+}
+
+void HAL_CAN_ErrorCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_hal_error(&rtcan, can_h);
+}
 /* USER CODE END 1 */

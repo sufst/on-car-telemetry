@@ -18,7 +18,8 @@ static void queue_receive_thread_entry(ULONG input);
 static void stats_init(unpack_stats_t* stats);
 static void stats_timer_callback(unpack_stats_t* stats);
 
-UINT unpack_init(unpack_context_t* unpack_ptr, watchdog_context_t* watchdog_context, TX_BYTE_POOL* stack_pool_ptr){
+UINT unpack_init(unpack_context_t* unpack_ptr, watchdog_context_t* watchdog_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan){
+
 
 VOID* thread_stack_ptr = NULL;
 rtcan_status_t can_status;
@@ -26,8 +27,12 @@ UINT tx_status;
 
     unpack_ptr->watchdog = watchdog_context;
 
+unpack_ptr->rtcan = rtcan;
+
     /* Initialise RTCAN instance */
-    tx_status = rtcan_init(&unpack_ptr->rtcan, 
+
+    tx_status = rtcan_init(unpack_ptr->rtcan, 
+
                &hcan1, 
                RTCAN_THREAD_PRIORITY, 
                stack_pool_ptr);
@@ -93,7 +98,7 @@ UINT tx_status;
     {
         for(int i = 0; i < CAN_HANDLERS_TABLE_SIZE; i++)
         {
-            can_status = rtcan_subscribe(&unpack_ptr->rtcan, can_handler_get(i)->identifier , &unpack_ptr->rx_queue);
+            can_status = rtcan_subscribe(unpack_ptr->rtcan, can_handler_get(i)->identifier , &unpack_ptr->rx_queue);
             if(can_status != RTCAN_OK)
             {
                 /* Error handling - rtcan_subscribe failed */
@@ -106,7 +111,7 @@ UINT tx_status;
     /* Start RTCAN service */
     if(can_status == RTCAN_OK)
     {
-        can_status = rtcan_start(&unpack_ptr->rtcan);
+        can_status = rtcan_start(unpack_ptr->rtcan);
     }
 
 
@@ -188,7 +193,8 @@ void queue_receive_thread_entry(ULONG input)
         if(handlerunpack == NULL)
         {
           // mark the original received message as consumed
-          status = rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
+
+          status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
           if(status != RTCAN_OK)
             {
                 /* TODO: Non Critical error handling */
@@ -202,11 +208,13 @@ void queue_receive_thread_entry(ULONG input)
         if (c_timestamp - l_timestamp < 50)
         {
           // mark the original received message as consumed
-          status = rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
+
+          status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
           if(status != RTCAN_OK)
             {
                 /* TODO: Non Critical error handling */
             }
+
           continue;
         }
         ts_table[index] = c_timestamp;
@@ -215,11 +223,13 @@ void queue_receive_thread_entry(ULONG input)
         handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg_ptr->data, rx_msg_ptr->length);
 
         // mark the original received message as consumed
-        status = rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
+
+        status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
         if(status != RTCAN_OK)
         {
             /* TODO: Non Critical error handling */
         }
+
 
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
