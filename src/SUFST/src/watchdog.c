@@ -1,5 +1,7 @@
 #include <tx_api.h>
 #include "watchdog.h"
+#include "fail.h"
+#include "main.h"
 
 #define WATCHDOG_THREAD_PRIORITY             10
 #define WATCHDOG_THREAD_STACK_SIZE           1024
@@ -47,20 +49,32 @@ static void watchdog_thread_entry(ULONG input)
     watchdog_context_t* watchdog_ptr = (watchdog_context_t*) input;
 
     /* Turn on LED by default */
-
+    HAL_GPIO_WritePin(LED_OUT_GPIO_Port,LED_OUT_Pin, GPIO_PIN_SET);
     /* Suspend the thread on semaphore, when fault happen it will give back the semaphore */
     const UINT status = tx_semaphore_get(&watchdog_ptr->fault_semaphore, WATCHDOG_THREAD_WAKE_TIMEOUT);
 
+    /* Prioritise this thread */
+    tx_thread_priority_change(&watchdog_ptr->thread, 0,WATCHDOG_THREAD_PRIORITY);
     while(1)
     {
 
-
         switch (watchdog_ptr->error_code)
         {
-        case 0:
-            /* code */
+        case CAN_UNPACK_ERROR_INIT:
+            break;
+
+        case RTCAN_START_ERROR:
+            break;
+
+        case RTCAN_SUBSCRIBE_ERROR_INIT:
             break;
         
+        case STATS_MUTEX_ERROR:
+            break;
+
+        case CAN_RX_QUEUE_ERROR:
+            break;
+
         default:
             break;
         }
