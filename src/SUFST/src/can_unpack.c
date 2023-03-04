@@ -18,13 +18,15 @@ static void queue_receive_thread_entry(ULONG input);
 static void stats_init(unpack_stats_t* stats);
 static void stats_timer_callback(unpack_stats_t* stats);
 
-UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr){
+UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan){
 
 VOID* thread_stack_ptr = NULL;
 rtcan_status_t can_status;
 
+unpack_ptr->rtcan = rtcan;
+
     /* Initialise RTCAN instance */
-    UINT tx_status = rtcan_init(&unpack_ptr->rtcan, 
+    UINT tx_status = rtcan_init(unpack_ptr->rtcan, 
                &hcan1, 
                RTCAN_THREAD_PRIORITY, 
                stack_pool_ptr);
@@ -83,7 +85,7 @@ rtcan_status_t can_status;
     {
         for(int i = 0; i < CAN_HANDLERS_TABLE_SIZE; i++)
         {
-            can_status = rtcan_subscribe(&unpack_ptr->rtcan, can_handler_get(i)->identifier , &unpack_ptr->rx_queue);
+            can_status = rtcan_subscribe(unpack_ptr->rtcan, can_handler_get(i)->identifier , &unpack_ptr->rx_queue);
             if(can_status != RTCAN_OK)
             {
                 break; /* TODO: Add error handling */
@@ -93,7 +95,7 @@ rtcan_status_t can_status;
     /* Start RTCAN service */
     if(can_status == RTCAN_OK)
     {
-        can_status = rtcan_start(&unpack_ptr->rtcan);
+        can_status = rtcan_start(unpack_ptr->rtcan);
     }
     /* Initialise stats structure */
     if(can_status == RTCAN_OK)
@@ -150,7 +152,7 @@ void queue_receive_thread_entry(ULONG input)
         if(handlerunpack == NULL)
         {
           // mark the original received message as consumed
-          rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
+          rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
           continue;
         }
         /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
@@ -160,7 +162,7 @@ void queue_receive_thread_entry(ULONG input)
         if (c_timestamp - l_timestamp < 50)
         {
           // mark the original received message as consumed
-          rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
+          rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
           continue;
         }
         ts_table[index] = c_timestamp;
@@ -169,7 +171,7 @@ void queue_receive_thread_entry(ULONG input)
         handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg_ptr->data, rx_msg_ptr->length);
 
         // mark the original received message as consumed
-        rtcan_msg_consumed(&unpack_ptr->rtcan, rx_msg_ptr);
+        rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
 
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */

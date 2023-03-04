@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "can_unpack.h"
+#include "can.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,11 +45,13 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 static unpack_context_t unpack_context;
+static rtcan_handle_t rtcan;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* can_h);
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef* can_h);
 /* USER CODE END PFP */
 
 /**
@@ -64,7 +67,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   /* USER CODE BEGIN App_ThreadX_Init */
     (void)byte_pool;
 
-    ret = unpack_init(&unpack_context, byte_pool);
+    ret = unpack_init(&unpack_context, byte_pool, &rtcan);
 
   /* USER CODE END App_ThreadX_Init */
 
@@ -90,5 +93,13 @@ void MX_ThreadX_Init(void)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_rx_it(&rtcan, can_h, 0);
+}
 
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef* can_h)
+{
+    rtcan_handle_rx_it(&rtcan, can_h, 1);
+}
 /* USER CODE END 1 */
