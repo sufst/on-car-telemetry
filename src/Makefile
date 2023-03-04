@@ -40,6 +40,8 @@ Middlewares/SUFST/rtcan/src/rtcan.c \
 Middlewares/SUFST/can-defs/out/can_database.c \
 Middlewares/SUFST/can-defs/out/can_handlers.c \
 SUFST/src/can_unpack.c \
+SUFST/src/watchdog.c \
+SUFST/src/fail.c \
 Core/Src/main.c \
 Core/Src/gpio.c \
 Core/Src/app_threadx.c \
