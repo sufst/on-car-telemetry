@@ -1,7 +1,7 @@
 #include <tx_api.h>
 #include "watchdog.h"
 #include "main.h"
-
+#include <stdatomic.h>
 #define WATCHDOG_THREAD_PRIORITY             10
 #define WATCHDOG_THREAD_STACK_SIZE           1024
 #define WATCHDOG_THREAD_PREEMPTION_THRESHOLD 10                
@@ -51,8 +51,7 @@ static void watchdog_thread_entry(ULONG input)
     /* Suspend the thread on semaphore, when fault happen it will give back the semaphore */
     const UINT status = tx_semaphore_get(&watchdog_ptr->fault_semaphore, TX_WAIT_FOREVER);
 
-    /* Prioritise this thread */
-    tx_thread_priority_change(&watchdog_ptr->thread, 0,WATCHDOG_THREAD_PRIORITY);
+
     while(1)
     {
 
@@ -76,17 +75,20 @@ static void watchdog_thread_entry(ULONG input)
         default:
             break;
         }
-
+        HAL_GPIO_TogglePin(LED_OUT_GPIO_Port,LED_OUT_Pin);
         // Introduce 500ms delay
         tx_thread_sleep(50);
     }
 
 }
 
-void critical_error(uint32_t error_code, watchdog_context_t* watchdog)
+void critical_error(TX_THREAD* thread_ptr, uint32_t error_code, watchdog_context_t* watchdog)
 {
 
-watchdog->error_code = error_code;
-tx_semaphore_put(&watchdog->fault_semaphore);
+    atomic_store(&watchdog->error_code, error_code);
+    tx_semaphore_put(&watchdog->fault_semaphore);
 
+    /* Prioritise watchdog thread and suspend calling thread */
+    tx_thread_priority_change(&watchdog->thread, 0, WATCHDOG_THREAD_PRIORITY);
+    tx_thread_suspend(thread_ptr);
 }
