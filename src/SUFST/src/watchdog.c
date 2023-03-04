@@ -5,7 +5,6 @@
 #define WATCHDOG_THREAD_PRIORITY             10
 #define WATCHDOG_THREAD_STACK_SIZE           1024
 #define WATCHDOG_THREAD_PREEMPTION_THRESHOLD 10                
-#define WATCHDOG_THREAD_WAKE_TIMEOUT         10
 
 static void watchdog_thread_entry(ULONG input);
 
@@ -50,7 +49,7 @@ static void watchdog_thread_entry(ULONG input)
     /* Turn on LED by default */
     HAL_GPIO_WritePin(LED_OUT_GPIO_Port,LED_OUT_Pin, GPIO_PIN_SET);
     /* Suspend the thread on semaphore, when fault happen it will give back the semaphore */
-    const UINT status = tx_semaphore_get(&watchdog_ptr->fault_semaphore, WATCHDOG_THREAD_WAKE_TIMEOUT);
+    const UINT status = tx_semaphore_get(&watchdog_ptr->fault_semaphore, TX_WAIT_FOREVER);
 
     /* Prioritise this thread */
     tx_thread_priority_change(&watchdog_ptr->thread, 0,WATCHDOG_THREAD_PRIORITY);
