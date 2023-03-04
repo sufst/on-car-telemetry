@@ -50,12 +50,7 @@ static rtcan_handle_t rtcan;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef* can_h);
-void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef* can_h);
-void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef* can_h);
-void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* can_h);
-void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef* can_h);
-void HAL_CAN_ErrorCallback(CAN_HandleTypeDef* can_h);
+
 /* USER CODE END PFP */
 
 /**
