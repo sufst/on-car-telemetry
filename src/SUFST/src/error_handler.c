@@ -89,6 +89,6 @@ void critical_error(TX_THREAD* thread_ptr, uint32_t error_code, error_handler_co
     tx_semaphore_put(&error_handler->fault_semaphore);
 
     /* Prioritise error_handler thread and suspend calling thread */
-    tx_thread_priority_change(&error_handler->thread, 0, ERROR_HANDLER_THREAD_PRIORITY);
+    tx_thread_priority_change(&error_handler->thread, 0, NULL);
     tx_thread_suspend(thread_ptr);
 }
