@@ -5,7 +5,9 @@
         "can_publisher.h": "c",
         "telemetry_protocol.h": "c",
         "stdint.h": "c",
-        "tx_api.h": "c"
+        "tx_api.h": "c",
+        "main.h": "c",
+        "stdatomic.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

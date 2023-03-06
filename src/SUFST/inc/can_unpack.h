@@ -4,6 +4,7 @@
 #include "telemetry_protocol.h"
 #include "rtcan.h"
 #include <stdint.h>
+#include "error_handler.h"
 
 #define CAN_PUBLISHER_RX_QUEUE_SIZE 10 //TODO: add config.h storing such values to avoid redefinition.
 
@@ -31,8 +32,10 @@ typedef struct {
 
   unpack_stats_t stats;
 
+  error_handler_context_t* error_handler;
+
 } unpack_context_t;
 
-UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan);
+UINT unpack_init(unpack_context_t* unpack_ptr, error_handler_context_t* error_handler_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan);
 
 #endif /* CAN_UNPACK_H */

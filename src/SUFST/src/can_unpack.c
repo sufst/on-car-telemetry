@@ -1,5 +1,5 @@
 #include <tx_api.h>
-
+#include "error_handler.h"
 #include "can_handlers.h"
 #include "can_unpack.h"
 #include "usart.h"
@@ -18,15 +18,21 @@ static void queue_receive_thread_entry(ULONG input);
 static void stats_init(unpack_stats_t* stats);
 static void stats_timer_callback(unpack_stats_t* stats);
 
-UINT unpack_init(unpack_context_t* unpack_ptr, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan){
+UINT unpack_init(unpack_context_t* unpack_ptr, error_handler_context_t* error_handler_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan){
+
 
 VOID* thread_stack_ptr = NULL;
 rtcan_status_t can_status;
+UINT tx_status;
+
+    unpack_ptr->error_handler = error_handler_context;
 
 unpack_ptr->rtcan = rtcan;
 
     /* Initialise RTCAN instance */
-    UINT tx_status = rtcan_init(unpack_ptr->rtcan, 
+
+    tx_status = rtcan_init(unpack_ptr->rtcan, 
+
                &hcan1, 
                RTCAN_THREAD_PRIORITY, 
                stack_pool_ptr);
@@ -80,6 +86,13 @@ unpack_ptr->rtcan = rtcan;
               TX_INHERIT);
     }
 
+    /* Error handling - Can Unpack Thread Initialisation failed */
+    if(tx_status != TX_SUCCESS)
+    {
+        critical_error(&unpack_ptr->thread, CAN_UNPACK_ERROR_INIT, unpack_ptr->error_handler);
+        return tx_status;
+    }
+
     /* Subscribe to can messages*/
     if (tx_status == TX_SUCCESS)
     {
@@ -88,7 +101,10 @@ unpack_ptr->rtcan = rtcan;
             can_status = rtcan_subscribe(unpack_ptr->rtcan, can_handler_get(i)->identifier , &unpack_ptr->rx_queue);
             if(can_status != RTCAN_OK)
             {
-                break; /* TODO: Add error handling */
+                /* Error handling - rtcan_subscribe failed */
+                critical_error(&unpack_ptr->thread, RTCAN_SUBSCRIBE_ERROR_INIT, unpack_ptr->error_handler);
+                /* Do soft reset? */
+                return tx_status;
             }
         }
     }
@@ -97,13 +113,22 @@ unpack_ptr->rtcan = rtcan;
     {
         can_status = rtcan_start(unpack_ptr->rtcan);
     }
+
+
     /* Initialise stats structure */
     if(can_status == RTCAN_OK)
     {
         stats_init(&unpack_ptr->stats);
     }
+    else
+    {
+        /* Error handling - rtcan_start failed */
+        /* @rureverek: Try reset instead? */
+        critical_error(&unpack_ptr->thread, RTCAN_START_ERROR, unpack_ptr->error_handler);
+        /* Do soft reset? */
+    }
 
-    return can_status;
+    return tx_status;
 }
 
 void queue_receive_thread_entry(ULONG input)
@@ -118,20 +143,36 @@ void queue_receive_thread_entry(ULONG input)
     while (1)
     {
         int ret;
-        
+        rtcan_status_t status;
+
         /* Receive data from the queue. */
         ret = tx_queue_receive(&unpack_ptr->rx_queue,
                                     (void *) &rx_msg_ptr,
                                     TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
+            critical_error(&unpack_ptr->thread, CAN_RX_QUEUE_ERROR, unpack_ptr->error_handler);
             return;
         }
+
         /* For statistic */
-        tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
+        ret = tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
+        if (ret != TX_SUCCESS)
+        {
+            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+            return;
+        }
+
         unpack_ptr->stats.rx_can_count++;
         unpack_ptr->stats.rx_bytes += rx_msg_ptr->length;
-        tx_mutex_put(&unpack_ptr->stats.stats_mutex);
+
+        ret = tx_mutex_put(&unpack_ptr->stats.stats_mutex);
+        if (ret != TX_SUCCESS)
+        {
+            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+            return;
+        }
+        
         /* Find the can handler of matching identifier */
         int index = 0;
         for(; index<=CAN_HANDLERS_TABLE_SIZE; index++)
@@ -152,7 +193,12 @@ void queue_receive_thread_entry(ULONG input)
         if(handlerunpack == NULL)
         {
           // mark the original received message as consumed
-          rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
+
+          status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
+          if(status != RTCAN_OK)
+            {
+                /* TODO: Non Critical error handling */
+            }
           continue;
         }
         /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
@@ -162,7 +208,13 @@ void queue_receive_thread_entry(ULONG input)
         if (c_timestamp - l_timestamp < 50)
         {
           // mark the original received message as consumed
-          rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
+
+          status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
+          if(status != RTCAN_OK)
+            {
+                /* TODO: Non Critical error handling */
+            }
+
           continue;
         }
         ts_table[index] = c_timestamp;
@@ -171,7 +223,13 @@ void queue_receive_thread_entry(ULONG input)
         handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg_ptr->data, rx_msg_ptr->length);
 
         // mark the original received message as consumed
-        rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
+
+        status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
+        if(status != RTCAN_OK)
+        {
+            /* TODO: Non Critical error handling */
+        }
+
 
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
@@ -179,17 +237,34 @@ void queue_receive_thread_entry(ULONG input)
         pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
 
         /* Send pdu packet through UART */
-        HAL_StatusTypeDef status = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
+        HAL_StatusTypeDef uart_ret = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
 
-        if(status != HAL_OK)
+        if(uart_ret != HAL_OK)
         {
-          return;
+            /* Do Non-critical error handling here */
         }
-        /* For statistic */
-        tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
-        unpack_ptr->stats.tx_pdu_count++;
-        unpack_ptr->stats.tx_bytes += sizeof(pdu_struct);
-        tx_mutex_put(&unpack_ptr->stats.stats_mutex);    
+        else
+        {
+
+            /* For statistic if message was sent */
+            ret = tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
+            if (ret != TX_SUCCESS)
+            {
+                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+                return;
+            }
+            unpack_ptr->stats.tx_pdu_count++;
+            unpack_ptr->stats.tx_bytes += sizeof(pdu_struct);
+
+            ret = tx_mutex_put(&unpack_ptr->stats.stats_mutex);    
+            if (ret != TX_SUCCESS)
+            {
+                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+                return;
+            }
+
+        }
+
     }
 }
 
