@@ -1,5 +1,6 @@
 #include <tx_api.h>
 #include "can_publisher.h"
+#include "Debug/testbench_can_data.h"
 
 #define QUEUE_SEND_THREAD_PRIORITY             10
 #define QUEUE_SEND_THREAD_STACK_SIZE           1024
@@ -56,20 +57,19 @@ void queue_send_thread_entry(ULONG input)
 
     // Simulated CAN message
     rtcan_msg_t queue_data;
+    u_int16_t debug_index = 0;
 
     while(1){
     
-    // Simulate CAN Message here. TODO: Get input from file.
-
     queue_data.identifier = CAN_DATABASE_PM100_VOLTAGE_INFO_FRAME_ID;
     queue_data.length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
 
-    // for(int i = 0; i<8; i++)
-    // {
-    //     queue_data.data[i] = i;
-    // }
-    
     // Parse lookup table of dummy data here and pack it in queue_data
+    for(int i = 0; i < 8; i++)
+    {
+        queue_data.data[i] = debug_lookup[debug_index%16 + i];
+    }
+    debug_index++;
 
     // Send the data to the queue.
     UINT ret = tx_queue_send(&publisher_ptr->tx_queue, (rtcan_msg_t*) &queue_data, TX_WAIT_FOREVER);
