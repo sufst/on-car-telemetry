@@ -1,5 +1,7 @@
 #include <tx_api.h>
+#include "rtcan.h"
 #include "can_publisher.h"
+#include "can_database.h"
 #include "Debug/testbench_can_data.h"
 
 #define QUEUE_SEND_THREAD_PRIORITY             10
@@ -57,7 +59,7 @@ void queue_send_thread_entry(ULONG input)
 
     // Simulated CAN message
     rtcan_msg_t queue_data;
-    u_int16_t debug_index = 0;
+    uint16_t debug_index = 0;
 
     while(1){
     

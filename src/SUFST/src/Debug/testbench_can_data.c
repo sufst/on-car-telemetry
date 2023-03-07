@@ -5,7 +5,7 @@
  * @brief  Dummy data lookup table for simulating CAN bus communication
  ***************************************************************************/
 
-#include "Debug/apps_testbench_data.h"
+#include "Debug/testbench_can_data.h"
 #include "config.h"
 
 #if CAN_DEBUG_MODE == 1

@@ -13,7 +13,7 @@
 #define TESTBENCH_CAN_DATA_H
 
 #if CAN_DEBUG_MODE == 1
-extern const uint8_t debug_lookup[1001];
+extern const uint8_t debug_lookup[128];
 #endif
 
 #endif

@@ -43,12 +43,4 @@ typedef struct {
 
 UINT unpack_init(unpack_context_t* unpack_ptr, error_handler_context_t* error_handler_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan);
 
-static pdu_t can_debug_data = 
-{
-  CAN_DEBUG_START_BYTE,                                 /* start_byte */
-  CAN_DEBUG_ID,                                         /* ID */
-  {CAN_DEBUG_HEADER_BITFIELD, CAN_DEBUG_HEADER_EPOCH},  /* header */
-  CAN_DEBUG_DATA                                        /* data */
-};
-
 #endif /* CAN_UNPACK_H */
