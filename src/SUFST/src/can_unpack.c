@@ -146,8 +146,6 @@ void queue_receive_thread_entry(ULONG input)
         int ret;
         rtcan_status_t status;
 
-        #if CAN_DEBUG_MODE == 0
-        /* NORMAL mode */
         /* Receive data from the queue. */
         ret = tx_queue_receive(&unpack_ptr->rx_queue,
                                     (void *) &rx_msg_ptr,
@@ -237,12 +235,6 @@ void queue_receive_thread_entry(ULONG input)
         pdu_struct.start_byte = 1; /* Assign start byte */
         pdu_struct.ID = handlerunpack->pdu_id; /* Assign PDU ID */
         pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
-
-        #elif CAN_DEBUG_MODE == 1
-            /* DEBUG mode */
-            /* Fill pdu_struct data buffer with DEBUG data*/
-            pdu_struct = can_debug_data;
-        #endif
         
         /* Send pdu packet through UART */
         HAL_StatusTypeDef uart_ret = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);

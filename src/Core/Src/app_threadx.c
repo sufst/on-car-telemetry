@@ -69,7 +69,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     (void)byte_pool;
 
     ret = unpack_init(&unpack_context, &error_handler_context, byte_pool, &rtcan);
-
+    /* todo: if debug mode was on, start can_publisher thread here */
 
     if(ret == TX_SUCCESS)
     {

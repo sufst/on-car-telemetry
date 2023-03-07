@@ -64,10 +64,12 @@ void queue_send_thread_entry(ULONG input)
     queue_data.identifier = CAN_DATABASE_PM100_VOLTAGE_INFO_FRAME_ID;
     queue_data.length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
 
-    for(int i = 0; i<8; i++)
-    {
-        queue_data.data[i] = i;
-    }
+    // for(int i = 0; i<8; i++)
+    // {
+    //     queue_data.data[i] = i;
+    // }
+    
+    // Parse lookup table of dummy data here and pack it in queue_data
 
     // Send the data to the queue.
     UINT ret = tx_queue_send(&publisher_ptr->tx_queue, (rtcan_msg_t*) &queue_data, TX_WAIT_FOREVER);
