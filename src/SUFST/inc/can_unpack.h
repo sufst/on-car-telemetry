@@ -7,6 +7,11 @@
 #include "error_handler.h"
 
 #define CAN_PUBLISHER_RX_QUEUE_SIZE 10 //TODO: add config.h storing such values to avoid redefinition.
+#define CAN_DEBUG_START_BYTE        1
+#define CAN_DEBUG_ID                0
+#define CAN_DEBUG_HEADER_BITFIELD   0
+#define CAN_DEBUG_HEADER_EPOCH      0
+#define CAN_DEBUG_DATA              {0, 1, 2, 3, 4, 5, 6, 7}
 
 typedef struct {
 
@@ -37,5 +42,13 @@ typedef struct {
 } unpack_context_t;
 
 UINT unpack_init(unpack_context_t* unpack_ptr, error_handler_context_t* error_handler_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan);
+
+static pdu_t can_debug_data = 
+{
+  CAN_DEBUG_START_BYTE,                                 /* start_byte */
+  CAN_DEBUG_ID,                                         /* ID */
+  {CAN_DEBUG_HEADER_BITFIELD, CAN_DEBUG_HEADER_EPOCH},  /* header */
+  CAN_DEBUG_DATA                                        /* data */
+};
 
 #endif /* CAN_UNPACK_H */
