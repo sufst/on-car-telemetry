@@ -76,12 +76,12 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     (void)byte_pool;
 
     ret = unpack_init(&unpack_context, &error_handler_context, byte_pool, &rtcan);
-    /* todo: if debug mode was on, start can_publisher thread here */
+    /* if debug mode is on, start can_publisher thread here */
     #if CAN_DEBUG_MODE == 1
-    if(ret == TX_SUCCESS)
-    {
-      ret = can_publisher_init(&publisher_context, byte_pool);
-    }
+      if(ret == TX_SUCCESS)
+      {
+        ret = can_publisher_init(&publisher_context, byte_pool);
+      }
     #endif
 
     if(ret == TX_SUCCESS)
