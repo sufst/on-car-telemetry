@@ -289,3 +289,8 @@ void stats_timer_callback(unpack_stats_t* stats)
     stats->tx_bytes = 0;
     tx_mutex_put(&stats->stats_mutex);
 }
+
+TX_QUEUE * can_unpack_get_queue_ptr(unpack_context_t* can_unpack_context)
+{
+  return &can_unpack_context->rx_queue;
+}

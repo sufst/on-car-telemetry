@@ -3,6 +3,7 @@
 #include "can_publisher.h"
 #include "can_database.h"
 #include "Debug/testbench_can_data.h"
+#include "error_handler.h"
 
 #define QUEUE_SEND_THREAD_PRIORITY             10
 #define QUEUE_SEND_THREAD_STACK_SIZE           1024
@@ -17,24 +18,17 @@ void queue_send_thread_entry(ULONG input);
  *
  * @return		See ThreadX return codes
  */
-UINT can_publisher_init(unpack_context_t* publisher_ptr, TX_BYTE_POOL* stack_pool_ptr)
+UINT can_publisher_init(publisher_context_t* publisher_ptr, TX_QUEUE * rx_queue, TX_BYTE_POOL* stack_pool_ptr)
 {
 
     VOID* thread_stack_ptr = NULL;
-/* Setup transmit queue */
-    UINT tx_status = tx_queue_create(&publisher_ptr->rx_queue,
-                                     "CAN Simulation Queue",
-                                     sizeof(rtcan_msg_t)/sizeof(ULONG),
-                                     &publisher_ptr->rx_queue_mem,
-                                     CAN_PUBLISHER_TX_QUEUE_SIZE * sizeof(rtcan_msg_t));
 
-    if(tx_status == TX_SUCCESS)
-    {
-        tx_status = tx_byte_allocate(stack_pool_ptr,
+    publisher_ptr->tx_queue = rx_queue;
+
+    UINT tx_status = tx_byte_allocate(stack_pool_ptr,
                                 &thread_stack_ptr,
                                 QUEUE_SEND_THREAD_STACK_SIZE,
                                 TX_NO_WAIT);
-    }
 
     if (tx_status == TX_SUCCESS)
     {
@@ -55,11 +49,10 @@ UINT can_publisher_init(unpack_context_t* publisher_ptr, TX_BYTE_POOL* stack_poo
 
 void queue_send_thread_entry(ULONG input)
 {
-    unpack_context_t* publisher_ptr = (unpack_context_t*) input;
+    publisher_context_t* publisher_ptr = (publisher_context_t*) input;
 
     // Simulated CAN message
     rtcan_msg_t queue_data;
-    uint16_t debug_index = 0;
 
     while(1){
     
@@ -67,13 +60,13 @@ void queue_send_thread_entry(ULONG input)
     queue_data.length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
 
     // Parse lookup table of dummy data here and pack it in queue_data
-    for(int i = 0; i < 8; i++)
+    for(int i = 0; i < DEBUG_LOOKUP_SIZE; i++)
     {
-        queue_data.data[i] = debug_lookup[publisher_ptr->stats.tx_pdu_count + i];
+        queue_data.data[i % DEBUG_LOOKUP_DATA_CELL] = debug_lookup[i];
     }    
 
     // Send the data to the queue.
-    UINT ret = tx_queue_send(&publisher_ptr->rx_queue, (rtcan_msg_t*) &queue_data, TX_WAIT_FOREVER);
+    UINT ret = tx_queue_send(publisher_ptr->tx_queue, (rtcan_msg_t*) &queue_data, TX_WAIT_FOREVER);
     if(ret != TX_SUCCESS){
         return;
     }
@@ -81,9 +74,4 @@ void queue_send_thread_entry(ULONG input)
     tx_thread_sleep(50);
     }
 
-}
-
-TX_QUEUE * can_publisher_get_queue_ptr(unpack_context_t* pub_context)
-{
-  return &pub_context->rx_queue;
 }
