@@ -28,12 +28,11 @@ UINT tx_status;
 
     unpack_ptr->error_handler = error_handler_context;
 
-unpack_ptr->rtcan = rtcan;
+    unpack_ptr->rtcan = rtcan;
 
     /* Initialise RTCAN instance */
     #if CAN_DEBUG_MODE == 0
     tx_status = rtcan_init(unpack_ptr->rtcan, 
-
                &hcan1, 
                RTCAN_THREAD_PRIORITY, 
                stack_pool_ptr);

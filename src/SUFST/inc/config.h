@@ -7,7 +7,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define CAN_DEBUG_MODE 1
+#define CAN_DEBUG_MODE 0
 #define DEBUG_LOOKUP_SIZE 128
 #define DEBUG_LOOKUP_DATA_CELL 8
 #endif /* CONFIG_H */
