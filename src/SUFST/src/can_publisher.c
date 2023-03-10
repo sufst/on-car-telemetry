@@ -54,20 +54,16 @@ void queue_send_thread_entry(ULONG input)
     // Simulated CAN message
     rtcan_msg_t queue_data;
     rtcan_msg_t* data_ptr = &queue_data;
-    uint32_t index = 0;
+    uint32_t i = 0;
 
     while(1){
     
     queue_data.identifier = CAN_DATABASE_PM100_CURRENT_INFO_FRAME_ID;
     queue_data.length = CAN_DATABASE_PM100_CURRENT_INFO_LENGTH;
 
-    // Parse lookup table of dummy data here and pack it in queue_data
-    for(int i = 0; i < DEBUG_LOOKUP_DATA_CELL; i++)
-    {
-        queue_data.data[i] = debug_lookup[index];
+    memcpy(&queue_data.data, testbench_can_get_data_ptr(i), sizeof(uint8_t)*DEBUG_LOOKUP_DATA_CELL_SIZE);
 
-        index += 1;
-    }    
+    i += DEBUG_LOOKUP_DATA_CELL_SIZE;  
 
     // Send the data to the queue.
     UINT ret = tx_queue_send(publisher_ptr->tx_queue, (rtcan_msg_t *) &data_ptr, TX_WAIT_FOREVER);
@@ -75,12 +71,12 @@ void queue_send_thread_entry(ULONG input)
         return;
     }
 
-    if(index >= DEBUG_LOOKUP_SIZE - 1)
+    if(i >= DEBUG_LOOKUP_SIZE - 1)
     {
-        index = 0;
+        i = 0;
     }
     // Introduce 500ms delay
-    tx_thread_sleep(50);
+    tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
     }
 
 }

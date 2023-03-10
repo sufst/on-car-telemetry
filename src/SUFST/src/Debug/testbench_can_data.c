@@ -27,3 +27,13 @@ const uint8_t debug_lookup[DEBUG_LOOKUP_SIZE] = {
     0xb1, 0xdf, 0x58, 0xc6, 0xb2, 0xa9, 0xd3, 0xf3, 
     0x64, 0x0e, 0x5c, 0xa8, 0xb9, 0xa1, 0xb3, 0x70
 };
+
+const uint8_t testbench_can_get_data(uint32_t index)
+{
+    return debug_lookup[index];
+}
+
+const uint8_t* testbench_can_get_data_ptr(uint32_t index)
+{
+    return &debug_lookup[index];
+}

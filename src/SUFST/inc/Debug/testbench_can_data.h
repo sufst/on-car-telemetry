@@ -11,10 +11,10 @@
 #include <stdint.h>
 #include "config.h"
 
+#define DEBUG_LOOKUP_SIZE 128
+#define DEBUG_LOOKUP_DATA_CELL_SIZE 8
 
-
-
-extern const uint8_t debug_lookup[128];
-
+const uint8_t testbench_can_get_data(uint32_t index);
+const uint8_t* testbench_can_get_data_ptr(uint32_t index);
 
 #endif

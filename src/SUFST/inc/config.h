@@ -7,7 +7,14 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+/**
+ * @param CAN_DEBUG_MODE
+ * 
+ * 0 - Normal Mode - can_unpack thread consumes data from rtcan
+ * 
+ * 1 - Debug Mode - can_unpack thread gets simulated data from testbench
+ *  
+ */
 #define CAN_DEBUG_MODE 0
-#define DEBUG_LOOKUP_SIZE 128
-#define DEBUG_LOOKUP_DATA_CELL 8
+
 #endif /* CONFIG_H */
