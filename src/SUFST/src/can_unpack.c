@@ -143,7 +143,7 @@ void queue_receive_thread_entry(ULONG input)
     unpack_context_t* unpack_ptr = (unpack_context_t *) input;
 
     can_handler_t* handlerunpack = NULL;
-    rtcan_msg_t* rx_msg_ptr;
+    rtcan_msg_t* rx_msg_ptr = NULL;
     pdu_t pdu_struct;
     uint32_t l_timestamp, c_timestamp;
 
@@ -154,7 +154,7 @@ void queue_receive_thread_entry(ULONG input)
 
         /* Receive data from the queue. */
         ret = tx_queue_receive(&unpack_ptr->rx_queue,
-                                    (void *) &rx_msg_ptr,
+                                    (rtcan_msg_t*) &rx_msg_ptr,
                                     TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {

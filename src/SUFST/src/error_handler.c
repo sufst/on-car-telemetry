@@ -39,6 +39,13 @@ UINT error_handler_init(error_handler_context_t* error_handler_ptr, TX_BYTE_POOL
                                TX_AUTO_START);
     }
 
+    if(tx_status == TX_SUCCESS)
+    {
+        tx_status = tx_semaphore_create(&error_handler_ptr->fault_semaphore,
+                                "Error Handler Semaphore", 
+                                0);
+    }
+
     return tx_status;
 }
 

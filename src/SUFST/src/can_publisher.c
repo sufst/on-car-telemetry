@@ -53,22 +53,31 @@ void queue_send_thread_entry(ULONG input)
 
     // Simulated CAN message
     rtcan_msg_t queue_data;
+    rtcan_msg_t* data_ptr = &queue_data;
+    uint32_t index = 0;
 
     while(1){
     
-    queue_data.identifier = CAN_DATABASE_PM100_VOLTAGE_INFO_FRAME_ID;
-    queue_data.length = CAN_DATABASE_PM100_VOLTAGE_INFO_LENGTH;
+    queue_data.identifier = CAN_DATABASE_PM100_CURRENT_INFO_FRAME_ID;
+    queue_data.length = CAN_DATABASE_PM100_CURRENT_INFO_LENGTH;
 
     // Parse lookup table of dummy data here and pack it in queue_data
-    for(int i = 0; i < DEBUG_LOOKUP_SIZE; i++)
+    for(int i = 0; i < DEBUG_LOOKUP_DATA_CELL; i++)
     {
-        queue_data.data[i % DEBUG_LOOKUP_DATA_CELL] = debug_lookup[i];
+        queue_data.data[i] = debug_lookup[index];
+
+        index += 1;
     }    
 
     // Send the data to the queue.
-    UINT ret = tx_queue_send(publisher_ptr->tx_queue, (rtcan_msg_t*) &queue_data, TX_WAIT_FOREVER);
+    UINT ret = tx_queue_send(publisher_ptr->tx_queue, (rtcan_msg_t *) &data_ptr, TX_WAIT_FOREVER);
     if(ret != TX_SUCCESS){
         return;
+    }
+
+    if(index >= DEBUG_LOOKUP_SIZE - 1)
+    {
+        index = 0;
     }
     // Introduce 500ms delay
     tx_thread_sleep(50);
