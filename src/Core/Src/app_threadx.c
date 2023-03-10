@@ -52,9 +52,6 @@
 static unpack_context_t unpack_context;
 static error_handler_context_t error_handler_context;
 static rtcan_handle_t rtcan;
-#if CAN_DEBUG_MODE == 1
-  static publisher_context_t publisher_context;
-#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -80,7 +77,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     #if CAN_DEBUG_MODE == 1
       if(ret == TX_SUCCESS)
       {
-        ret = can_publisher_init(&publisher_context, byte_pool);
+        ret = can_publisher_init(&unpack_context, byte_pool);
       }
     #endif
 
