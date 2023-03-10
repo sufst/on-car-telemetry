@@ -28,15 +28,17 @@ UINT tx_status;
 
     unpack_ptr->error_handler = error_handler_context;
 
-unpack_ptr->rtcan = rtcan;
+    unpack_ptr->rtcan = rtcan;
 
     /* Initialise RTCAN instance */
-
+    #if CAN_DEBUG_MODE == 0
     tx_status = rtcan_init(unpack_ptr->rtcan, 
-
                &hcan1, 
                RTCAN_THREAD_PRIORITY, 
                stack_pool_ptr);
+    #else
+    tx_status = RTCAN_OK;
+    #endif
 
     if(tx_status == RTCAN_OK)
     {
@@ -94,6 +96,7 @@ unpack_ptr->rtcan = rtcan;
         return tx_status;
     }
 
+    #if CAN_DEBUG_MODE == 0
     /* Subscribe to can messages*/
     if (tx_status == TX_SUCCESS)
     {
@@ -114,7 +117,9 @@ unpack_ptr->rtcan = rtcan;
     {
         can_status = rtcan_start(unpack_ptr->rtcan);
     }
-
+    #else
+    can_status = RTCAN_OK;
+    #endif
 
     /* Initialise stats structure */
     if(can_status == RTCAN_OK)
@@ -194,8 +199,11 @@ void queue_receive_thread_entry(ULONG input)
         if(handlerunpack == NULL)
         {
           // mark the original received message as consumed
-
+          #if CAN_DEBUG_MODE == 0
           status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
+          #else
+          status = RTCAN_OK;
+          #endif
           if(status != RTCAN_OK)
             {
                 /* TODO: Non Critical error handling */
@@ -209,8 +217,11 @@ void queue_receive_thread_entry(ULONG input)
         if (c_timestamp - l_timestamp < 50)
         {
           // mark the original received message as consumed
-
+          #if CAN_DEBUG_MODE == 0
           status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
+          #else
+          status = RTCAN_OK;
+          #endif
           if(status != RTCAN_OK)
             {
                 /* TODO: Non Critical error handling */
@@ -224,8 +235,11 @@ void queue_receive_thread_entry(ULONG input)
         handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg_ptr->data, rx_msg_ptr->length);
 
         // mark the original received message as consumed
-
+        #if CAN_DEBUG_MODE == 0
         status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
+        #else
+        status = RTCAN_OK;
+        #endif
         if(status != RTCAN_OK)
         {
             /* TODO: Non Critical error handling */
