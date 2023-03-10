@@ -75,7 +75,13 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   /* USER CODE BEGIN App_ThreadX_Init */
     (void)byte_pool;
 
-    ret = unpack_init(&unpack_context, &error_handler_context, byte_pool, &rtcan);
+    ret = error_handler_init(&error_handler_context, byte_pool);
+
+    if(ret == TX_SUCCESS)
+    {
+        ret = unpack_init(&unpack_context, &error_handler_context, byte_pool, &rtcan);
+    }
+    
     /* if debug mode is on, start can_publisher thread here */
     #if CAN_DEBUG_MODE == 1
       if(ret == TX_SUCCESS)
@@ -84,10 +90,6 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
       }
     #endif
 
-    if(ret == TX_SUCCESS)
-    {
-      ret = error_handler_init(&error_handler_context, byte_pool);
-    }
   /* USER CODE END App_ThreadX_Init */
 
   return ret;
