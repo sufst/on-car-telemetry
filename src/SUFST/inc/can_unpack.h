@@ -37,5 +37,6 @@ typedef struct {
 } unpack_context_t;
 
 UINT unpack_init(unpack_context_t* unpack_ptr, error_handler_context_t* error_handler_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan);
+TX_QUEUE * can_unpack_get_queue_ptr(unpack_context_t* can_unpack_context);
 
 #endif /* CAN_UNPACK_H */

@@ -3,6 +3,7 @@
 #include "can_publisher.h"
 #include "can_database.h"
 #include "Debug/testbench_can_data.h"
+#include "error_handler.h"
 
 #define QUEUE_SEND_THREAD_PRIORITY             10
 #define QUEUE_SEND_THREAD_STACK_SIZE           1024
@@ -17,24 +18,17 @@ void queue_send_thread_entry(ULONG input);
  *
  * @return		See ThreadX return codes
  */
-UINT can_publisher_init(publisher_context_t* publisher_ptr, TX_BYTE_POOL* stack_pool_ptr)
+UINT can_publisher_init(publisher_context_t* publisher_ptr, TX_QUEUE * rx_queue, TX_BYTE_POOL* stack_pool_ptr)
 {
 
     VOID* thread_stack_ptr = NULL;
-/* Setup transmit queue */
-    UINT tx_status = tx_queue_create(&publisher_ptr->tx_queue,
-                                     "CAN Simulation Queue",
-                                     sizeof(rtcan_msg_t)/sizeof(ULONG),
-                                     &publisher_ptr->tx_queue_mem,
-                                     CAN_PUBLISHER_TX_QUEUE_SIZE * sizeof(rtcan_msg_t));
 
-    if(tx_status == TX_SUCCESS)
-    {
-        tx_status = tx_byte_allocate(stack_pool_ptr,
+    publisher_ptr->tx_queue = rx_queue;
+
+    UINT tx_status = tx_byte_allocate(stack_pool_ptr,
                                 &thread_stack_ptr,
                                 QUEUE_SEND_THREAD_STACK_SIZE,
                                 TX_NO_WAIT);
-    }
 
     if (tx_status == TX_SUCCESS)
     {
@@ -74,7 +68,7 @@ void queue_send_thread_entry(ULONG input)
     debug_index++;
 
     // Send the data to the queue.
-    UINT ret = tx_queue_send(&publisher_ptr->tx_queue, (rtcan_msg_t*) &queue_data, TX_WAIT_FOREVER);
+    UINT ret = tx_queue_send(publisher_ptr->tx_queue, (rtcan_msg_t*) &queue_data, TX_WAIT_FOREVER);
     if(ret != TX_SUCCESS){
         return;
     }
@@ -82,9 +76,4 @@ void queue_send_thread_entry(ULONG input)
     tx_thread_sleep(50);
     }
 
-}
-
-TX_QUEUE * can_publisher_get_queue_ptr(publisher_context_t* pub_context)
-{
-  return &pub_context->tx_queue;
 }
