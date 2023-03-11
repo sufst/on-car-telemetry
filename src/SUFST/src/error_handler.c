@@ -84,7 +84,7 @@ static void error_handler_thread_entry(ULONG input)
         }
         HAL_GPIO_TogglePin(LED_OUT_GPIO_Port,LED_OUT_Pin);
         // Introduce 500ms delay
-        tx_thread_sleep(50);
+        tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
     }
 
 }

@@ -11,7 +11,10 @@
 #include <stdint.h>
 #include "config.h"
 
+/* Size of Lookup Table */
 #define DEBUG_LOOKUP_SIZE 128
+
+/* Size of data cell */
 #define DEBUG_LOOKUP_DATA_CELL_SIZE 8
 
 const uint8_t testbench_can_get_data(uint32_t index);
