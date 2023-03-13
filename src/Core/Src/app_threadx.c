@@ -26,6 +26,10 @@
 #include "can_unpack.h"
 #include "error_handler.h"
 #include "can.h"
+#include "config.h"
+#if CAN_DEBUG_MODE == 1
+  #include "can_publisher.h"
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,6 +52,9 @@
 static unpack_context_t unpack_context;
 static error_handler_context_t error_handler_context;
 static rtcan_handle_t rtcan;
+#if CAN_DEBUG_MODE == 1
+  static publisher_context_t publisher_context;
+#endif
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,13 +75,21 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   /* USER CODE BEGIN App_ThreadX_Init */
     (void)byte_pool;
 
-    ret = unpack_init(&unpack_context, &error_handler_context, byte_pool, &rtcan);
-
+    ret = error_handler_init(&error_handler_context, byte_pool);
 
     if(ret == TX_SUCCESS)
     {
-      ret = error_handler_init(&error_handler_context, byte_pool);
+        ret = unpack_init(&unpack_context, &error_handler_context, byte_pool, &rtcan);
     }
+    
+    /* if debug mode is on, start can_publisher thread here */
+    #if CAN_DEBUG_MODE == 1
+      if(ret == TX_SUCCESS)
+      {
+        ret = can_publisher_init(&publisher_context, can_unpack_get_queue_ptr(&unpack_context), byte_pool);
+      }
+    #endif
+
   /* USER CODE END App_ThreadX_Init */
 
   return ret;

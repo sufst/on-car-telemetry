@@ -5,6 +5,7 @@
 #include "usart.h"
 #include "rtcan.h"
 #include "can.h"
+#include "config.h"
 
 #define RTCAN_THREAD_PRIORITY   3
 #define QUEUE_RX_THREAD_PRIORITY             10
@@ -27,15 +28,17 @@ UINT tx_status;
 
     unpack_ptr->error_handler = error_handler_context;
 
-unpack_ptr->rtcan = rtcan;
+    unpack_ptr->rtcan = rtcan;
 
     /* Initialise RTCAN instance */
-
+    #if CAN_DEBUG_MODE == 0
     tx_status = rtcan_init(unpack_ptr->rtcan, 
-
                &hcan1, 
                RTCAN_THREAD_PRIORITY, 
                stack_pool_ptr);
+    #else
+    tx_status = RTCAN_OK;
+    #endif
 
     if(tx_status == RTCAN_OK)
     {
@@ -92,7 +95,7 @@ unpack_ptr->rtcan = rtcan;
         critical_error(&unpack_ptr->thread, CAN_UNPACK_ERROR_INIT, unpack_ptr->error_handler);
         return tx_status;
     }
-
+    #if CAN_DEBUG_MODE == 0
     /* Subscribe to can messages*/
     if (tx_status == TX_SUCCESS)
     {
@@ -113,7 +116,10 @@ unpack_ptr->rtcan = rtcan;
     {
         can_status = rtcan_start(unpack_ptr->rtcan);
     }
-
+    #else
+    tx_status = TX_SUCCESS;
+    can_status == RTCAN_OK;
+    #endif
 
     /* Initialise stats structure */
     if(can_status == RTCAN_OK)
@@ -136,7 +142,7 @@ void queue_receive_thread_entry(ULONG input)
     unpack_context_t* unpack_ptr = (unpack_context_t *) input;
 
     can_handler_t* handlerunpack = NULL;
-    rtcan_msg_t* rx_msg_ptr;
+    rtcan_msg_t* rx_msg_ptr = NULL;
     pdu_t pdu_struct;
     uint32_t l_timestamp, c_timestamp;
 
@@ -147,7 +153,7 @@ void queue_receive_thread_entry(ULONG input)
 
         /* Receive data from the queue. */
         ret = tx_queue_receive(&unpack_ptr->rx_queue,
-                                    (void *) &rx_msg_ptr,
+                                    (rtcan_msg_t*) &rx_msg_ptr,
                                     TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
@@ -193,12 +199,13 @@ void queue_receive_thread_entry(ULONG input)
         if(handlerunpack == NULL)
         {
           // mark the original received message as consumed
-
+          #if CAN_DEBUG_MODE == 0
           status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
           if(status != RTCAN_OK)
             {
                 /* TODO: Non Critical error handling */
             }
+          #endif
           continue;
         }
         /* Check latest timestamp in ts_table, skip frame if not enough time has elapsed. Update ts_table. */
@@ -208,13 +215,13 @@ void queue_receive_thread_entry(ULONG input)
         if (c_timestamp - l_timestamp < 50)
         {
           // mark the original received message as consumed
-
+          #if CAN_DEBUG_MODE == 0
           status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
           if(status != RTCAN_OK)
             {
                 /* TODO: Non Critical error handling */
             }
-
+          #endif
           continue;
         }
         ts_table[index] = c_timestamp;
@@ -223,19 +230,18 @@ void queue_receive_thread_entry(ULONG input)
         handlerunpack->unpack_func((uint8_t *) &pdu_struct.data, rx_msg_ptr->data, rx_msg_ptr->length);
 
         // mark the original received message as consumed
-
+        #if CAN_DEBUG_MODE == 0
         status = rtcan_msg_consumed(unpack_ptr->rtcan, rx_msg_ptr);
         if(status != RTCAN_OK)
         {
             /* TODO: Non Critical error handling */
         }
-
-
+        #endif
         pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
         pdu_struct.ID = handlerunpack->pdu_id; /* Assign PDU ID */
         pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
-
+        
         /* Send pdu packet through UART */
         HAL_StatusTypeDef uart_ret = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
 
@@ -288,4 +294,9 @@ void stats_timer_callback(unpack_stats_t* stats)
     stats->rx_bytes = 0;
     stats->tx_bytes = 0;
     tx_mutex_put(&stats->stats_mutex);
+}
+
+TX_QUEUE * can_unpack_get_queue_ptr(unpack_context_t* can_unpack_context)
+{
+  return &can_unpack_context->rx_queue;
 }

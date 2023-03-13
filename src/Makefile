@@ -40,7 +40,9 @@ Middlewares/SUFST/rtcan/src/rtcan.c \
 Middlewares/SUFST/can-defs/out/can_database.c \
 Middlewares/SUFST/can-defs/out/can_handlers.c \
 SUFST/src/can_unpack.c \
+SUFST/src/can_publisher.c\
 SUFST/src/error_handler.c \
+SUFST/src/Debug/testbench_can_data.c\
 Core/Src/main.c \
 Core/Src/gpio.c \
 Core/Src/app_threadx.c \
@@ -304,6 +306,7 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -ISUFST/inc \
+-Isrc/SUFST/inc/Debug \
 -IMiddlewares/SUFST/can-defs/out \
 -ICore/Inc \
 -IAZURE_RTOS/App \
