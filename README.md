@@ -27,7 +27,7 @@ commands:
 
 ```sh
 git submodule init
-git submodule update
+git submodule update --remote
 ```
 
 For more information on submodules, see the [Git submodules documentation](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
