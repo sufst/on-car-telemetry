@@ -26,7 +26,7 @@ UINT xbee_comms_init(xbee_comms_context_t* xbee_comms_ptr, TX_BYTE_POOL* stack_p
 {
 
     VOID* thread_stack_ptr = NULL;
-
+    //@todo Implement queue
     UINT tx_status = tx_byte_allocate(stack_pool_ptr,
                                 &thread_stack_ptr,
                                 QUEUE_SEND_THREAD_STACK_SIZE,
@@ -46,9 +46,9 @@ UINT xbee_comms_init(xbee_comms_context_t* xbee_comms_ptr, TX_BYTE_POOL* stack_p
                                TX_AUTO_START);
     }
 
-    xbee_dev_init (xbee_dev_t *xbee, const xbee_serial_t *serport, xbee_is_awake_fn is_awake, xbee_reset_fn reset);
+    xbee_dev_init (xbee_dev_t *xbee, const xbee_serial_t *serport, xbee_is_awake_fn is_awake, xbee_reset_fn reset); //@todo Implement
 
-    xbee_wpan_init( xbee_dev_t *xbee, const wpan_endpoint_table_entry_t *ep_table);
+    xbee_wpan_init( xbee_dev_t *xbee, const wpan_endpoint_table_entry_t *ep_table); //@todo Implement
 
     return tx_status;
 }
@@ -57,12 +57,14 @@ void xbee_comms_entry(ULONG input)
 {
     xbee_comms_context_t* publisher_ptr = (xbee_comms_context_t*) input;
 
+    
+    xbee_header_transmit_explicit_t transmit_frame;
 
     while(1){
     
-        //Payload data queue receive
+        //@Todo Payload data queue receive
 
-        //Create Frame (Transmit Request - 0x10 or 0x11)
+        //@Todo Create Frame (Transmit Request - 0x10 or 0x11)
         
         //Write Frame (Transmit Request - 0x10 or 0x11)  
         int xbee_frame_write(xbee_dev_t * xbee,
@@ -74,7 +76,7 @@ void xbee_comms_entry(ULONG input)
         );
 
         //Check for newly received frames (Transmit Status)
-        xbee_dev_tick (xbee_dev_t *xbee);
+        xbee_dev_tick (xbee_dev_t *xbee); // @todo Currently based on blocking UART function (see xbee_serial_stm32). Should it be non-blocking interrupt based?
 
 
         // Introduce 500ms delay
@@ -95,7 +97,7 @@ void transmit_status_handler( xbee_dev_t *xbee,
     XBEE_UNUSED_PARAMETER(length);
     XBEE_UNUSED_PARAMETER(context);
 
-
+    /* @todo If success - implement rx/tx stats counter */
 
     return;
 }

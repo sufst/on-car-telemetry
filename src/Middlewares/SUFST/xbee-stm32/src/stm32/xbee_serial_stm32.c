@@ -26,14 +26,6 @@
 #include "xbee_cbuf.h"
 #include "usart.h"
 
-#define MY_BUF_SIZE 127
-struct {
-    xbee_cbuf_t        cbuf;
-    char               buf_space[MY_BUF_SIZE];
-} xbee_buf;
-
-
-
 bool_t xbee_ser_invalid( xbee_serial_t *serial)
 {
     return 0;
@@ -51,7 +43,7 @@ int xbee_ser_write( xbee_serial_t *serial, const void FAR *buffer,
 {
 HAL_StatusTypeDef ret;
 
-ret = HAL_UART_Transmit(&huart4, buffer, length, 200);
+ret = HAL_UART_Transmit(&huart4, buffer, length, 200); // @todo Create xbee_serial_t with huart handler defined in user app.
 if(ret != HAL_OK)
 {
     return -EIO;
@@ -72,7 +64,7 @@ int xbee_ser_read( xbee_serial_t *serial, void FAR *buffer, int bufsize)
 		return -EINVAL;
 	}
     
-    ret = HAL_UART_Receive(&huart4, buffer, bufsize, 100*bufsize);
+    ret = HAL_UART_Receive(&huart4, buffer, bufsize, 100*bufsize); // @todo Create xbee_serial_t with huart handler defined in user app.
     if(ret != HAL_OK)
     {
         return -EIO;
@@ -87,7 +79,7 @@ int xbee_ser_read( xbee_serial_t *serial, void FAR *buffer, int bufsize)
 int xbee_ser_putchar( xbee_serial_t *serial, uint8_t ch)
 {
     HAL_StatusTypeDef ret;
-    ret = HAL_UART_Transmit(&huart4, &ch, (uint8_t)1, 10);
+    ret = HAL_UART_Transmit(&huart4, &ch, (uint8_t)1, 10); // @todo Create xbee_serial_t with huart handler defined in user app.
     if(ret != HAL_OK)
     {
         return 0;
@@ -103,7 +95,7 @@ int xbee_ser_getchar( xbee_serial_t *serial)
 {
     HAL_StatusTypeDef ret;
     uint8_t ch;
-    ret = HAL_UART_Receive(&huart4, &ch, 1, 10);
+    ret = HAL_UART_Receive(&huart4, &ch, 1, 10); // @todo Create xbee_serial_t with huart handler defined in user app.
     if(ret != HAL_OK)
     {
         return 0;

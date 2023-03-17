@@ -46,74 +46,74 @@ FPUTCHAR_PROTOTYPE
 }
 */
 
-int xbee_readline( char *buffer, int length)
-{
-    static int state = XBEE_READLINE_STATE_INIT;
-    int c = 0;
-    static char *cursor;
-    HAL_StatusTypeDef ret;
-    if (buffer == NULL || length < 1)
-    {
-        return -EINVAL;
-    }
+// int xbee_readline( char *buffer, int length)
+// {
+//     static int state = XBEE_READLINE_STATE_INIT;
+//     int c = 0;
+//     static char *cursor;
+//     HAL_StatusTypeDef ret;
+//     if (buffer == NULL || length < 1)
+//     {
+//         return -EINVAL;
+//     }
 
-    switch (state)
-    {
-        default:
-        case XBEE_READLINE_STATE_INIT:
+//     switch (state)
+//     {
+//         default:
+//         case XBEE_READLINE_STATE_INIT:
 
 
-        case XBEE_READLINE_STATE_START_LINE:            // start of new line
-            cursor = buffer;
-            *buffer = '\0'; // reset string
-            state = XBEE_READLINE_STATE_CONTINUE_LINE;
-            // fall through to continued input
+//         case XBEE_READLINE_STATE_START_LINE:            // start of new line
+//             cursor = buffer;
+//             *buffer = '\0'; // reset string
+//             state = XBEE_READLINE_STATE_CONTINUE_LINE;
+//             // fall through to continued input
 
-        case XBEE_READLINE_STATE_CONTINUE_LINE:     // continued input
-            __HAL_UART_CLEAR_OREFLAG(&huart2);
-            //ret = getc();
-            ret = HAL_UART_Receive(&huart2, &c, 1, HAL_MAX_DELAY);
-//            fputc(ret);
-            if(ret != HAL_OK){
-                return -EAGAIN;
-            }
-            switch (c)
-            {
-                case 0x7F:              // backspace (Win32)
-                case '\b':              // supposedly backspace...
-                    if (buffer != cursor)
-                    {
-                        fputc('\b');
-                        fputc(' ');
-                        fputc('\b'); // back up, erase last character
-                        cursor--;
-                    }
-                    break;
+//         case XBEE_READLINE_STATE_CONTINUE_LINE:     // continued input
+//             __HAL_UART_CLEAR_OREFLAG(&huart2);
+//             //ret = getc();
+//             ret = HAL_UART_Receive(&huart2, &c, 1, HAL_MAX_DELAY);
+// //            fputc(ret);
+//             if(ret != HAL_OK){
+//                 return -EAGAIN;
+//             }
+//             switch (c)
+//             {
+//                 case 0x7F:              // backspace (Win32)
+//                 case '\b':              // supposedly backspace...
+//                     if (buffer != cursor)
+//                     {
+//                         fputc('\b');
+//                         fputc(' ');
+//                         fputc('\b'); // back up, erase last character
+//                         cursor--;
+//                     }
+//                     break;
 
-                case '\n':
-                case '\r':
-//                    fputc('\r'); //for WINDOWS Terminal
-                    fputc('\n');
-                    state = XBEE_READLINE_STATE_START_LINE;
-                    return cursor - buffer;
+//                 case '\n':
+//                 case '\r':
+// //                    fputc('\r'); //for WINDOWS Terminal
+//                     fputc('\n');
+//                     state = XBEE_READLINE_STATE_START_LINE;
+//                     return cursor - buffer;
 
-                default:
-                    if (isprint( c) && (cursor - buffer < length - 1))
-                    {
-                        *cursor++= c;
-                        fputc(c);
-                    }
-               else
-               {
-                  fputc( '\x07');     // error beep -- bad char
-               }
-                    break;
-            }
-            *cursor = 0;        // keep string null-terminated
-    }
+//                 default:
+//                     if (isprint( c) && (cursor - buffer < length - 1))
+//                     {
+//                         *cursor++= c;
+//                         fputc(c);
+//                     }
+//                else
+//                {
+//                   fputc( '\x07');     // error beep -- bad char
+//                }
+//                     break;
+//             }
+//             *cursor = 0;        // keep string null-terminated
+//     }
 
-    return -EAGAIN;
-}
+//     return -EAGAIN;
+// }
 
 int xbee_platform_init( void)
 {
@@ -121,7 +121,7 @@ int xbee_platform_init( void)
     if (init)
     {
         init = FALSE;
-        Serial.huart = &huart4;
+        Serial.huart = &huart4; /* @todo That should be defined by user in user app*/
     }
     return 0;
 }
