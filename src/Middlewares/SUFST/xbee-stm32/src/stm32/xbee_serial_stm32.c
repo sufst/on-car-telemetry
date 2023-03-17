@@ -195,6 +195,7 @@ int xbee_ser_set_rts( xbee_serial_t *serial, bool_t asserted)
 
 int xbee_ser_get_cts( xbee_serial_t *serial)
 {
+    /* Always clear to send ( don't use CTS pin )*/
     return 1;
 }
 
