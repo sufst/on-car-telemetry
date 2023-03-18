@@ -126,11 +126,9 @@ void xbee_comms_entry(ULONG input)
         xbee_transparent_serial(&transmit_envelope);
 
         //Check for newly received frames (Transmit Status)
-        do 
-        {
-            wpan_tick(&xbee_dev.wpan_dev); // @todo Do we need this?
-            xbee_dev_tick (&xbee_dev); // @todo Currently based on blocking UART function (see xbee_serial_stm32). Should it be non-blocking interrupt based?
-        } while (status == -EBUSY);        
+
+        //wpan_tick(&xbee_dev.wpan_dev); // @todo Do we need this?
+        xbee_dev_tick(&xbee_dev); // @todo Currently based on blocking UART function (see xbee_serial_stm32). Should it be non-blocking interrupt based?  
 
     }
 

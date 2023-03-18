@@ -17,7 +17,7 @@ void transmit_status_handler( xbee_dev_t *xbee,
 
 
 const xbee_dispatch_table_entry_t xbee_frame_handlers[
-  { XBEE_FRAME_TRANSMIT_STATUS, 0, transmit_status_handler(), NULL}, //Fill in 0x8B Handler
+  {XBEE_FRAME_TRANSMIT_STATUS, 0, transmit_status_handler(), NULL}, //Fill in 0x8B Handler
   XBEE_FRAME_TABLE_END,
 ];
 
