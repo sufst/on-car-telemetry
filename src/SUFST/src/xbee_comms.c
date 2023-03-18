@@ -18,17 +18,14 @@
 #define QUEUE_SEND_THREAD_PREEMPTION_THRESHOLD 10                
 
 static void xbee_comms_entry(ULONG input);
-static const xbee_serial_t xbee_serial;
+static xbee_serial_t xbee_serial;
 static xbee_dev_t xbee_dev;
 
 const wpan_cluster_table_entry_t digi_data_clusters[] =
 {
    // transparent serial goes here (cluster 0x0011)
-   { DIGI_CLUST_SERIAL, transparent_rx, NULL,
+   { DIGI_CLUST_SERIAL, NULL, NULL,
       WPAN_CLUST_FLAG_INOUT | WPAN_CLUST_FLAG_NOT_ZCL },
-
-   // handle join notifications (cluster 0x0095) when ATAO is not 0
-   XBEE_DISC_DIGI_DATA_CLUSTER_ENTRY,
 
    WPAN_CLUST_ENTRY_LIST_END
 };
@@ -111,7 +108,8 @@ void xbee_comms_entry(ULONG input)
     {
         int status;
         //@Todo Payload data queue receive
-        tx_queue_receive(queue, &rx, TX_WAIT_FOREVER); // @todo Get pointer to queue defined in can_unpack
+        //tx_queue_receive(queue, &rx, TX_WAIT_FOREVER); // @todo Get pointer to queue defined in can_unpack
+
         //Write Frame (Transmit Request - 0x10 or 0x11)  
         //Create envelope
         wpan_envelope_t transmit_envelope;
@@ -128,7 +126,7 @@ void xbee_comms_entry(ULONG input)
         //Check for newly received frames (Transmit Status)
 
         //wpan_tick(&xbee_dev.wpan_dev); // @todo Do we need this?
-        xbee_dev_tick(&xbee_dev); // @todo Currently based on blocking UART function (see xbee_serial_stm32). Should it be non-blocking interrupt based?  
+        xbee_dev_tick(&xbee_dev); // @todo Currently based on blocking UART function (see xbee_serial_stm32). Should it be non-blocking interrupt based?
 
     }
 
