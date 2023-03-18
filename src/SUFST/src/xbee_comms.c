@@ -4,16 +4,52 @@
 #include "can_database.h"
 #include "Debug/testbench_can_data.h"
 #include "error_handler.h"
+#include "telemetry_protocol.h"
 
 /* Include transmit frame API layer */
 #include "xbee/xbee_wpan.h"
-#include "xbee/device.h"
+#include "xbee/xbee_device.h"
+#include "xbee/xbee_tx_status.h"
+#include "wpan/wpan_aps.h"
+#include "xbee/xbee_transparent_serial.h"
 
 #define QUEUE_SEND_THREAD_PRIORITY             10
 #define QUEUE_SEND_THREAD_STACK_SIZE           1024
 #define QUEUE_SEND_THREAD_PREEMPTION_THRESHOLD 10                
 
-void xbee_comms_entry(ULONG input);
+static void xbee_comms_entry(ULONG input);
+static const xbee_serial_t xbee_serial;
+static xbee_dev_t xbee_dev;
+
+const wpan_cluster_table_entry_t digi_data_clusters[] =
+{
+   // transparent serial goes here (cluster 0x0011)
+   { DIGI_CLUST_SERIAL, transparent_rx, NULL,
+      WPAN_CLUST_FLAG_INOUT | WPAN_CLUST_FLAG_NOT_ZCL },
+
+   // handle join notifications (cluster 0x0095) when ATAO is not 0
+   XBEE_DISC_DIGI_DATA_CLUSTER_ENTRY,
+
+   WPAN_CLUST_ENTRY_LIST_END
+};
+
+wpan_ep_state_t zdo_ep_state = { 0 };
+
+static const wpan_endpoint_table_entry_t sample_endpoints[] = {
+   ZDO_ENDPOINT(zdo_ep_state),
+
+   // Endpoint/cluster for transparent serial and OTA command cluster
+   {  WPAN_ENDPOINT_DIGI_DATA,      // endpoint
+      WPAN_PROFILE_DIGI,            // profile ID
+      NULL,                         // endpoint handler
+      NULL,                         // ep_state
+      0x0000,                       // device ID
+      0x00,                         // version
+      digi_data_clusters            // clusters
+   },
+
+   { WPAN_ENDPOINT_END_OF_LIST }
+};
 
 /**
  * @brief 		Creates the Xbee Comms thread
@@ -46,41 +82,56 @@ UINT xbee_comms_init(xbee_comms_context_t* xbee_comms_ptr, TX_BYTE_POOL* stack_p
                                TX_AUTO_START);
     }
 
-    xbee_dev_init (xbee_dev_t *xbee, const xbee_serial_t *serport, xbee_is_awake_fn is_awake, xbee_reset_fn reset); //@todo Implement
+    /* Init xbee_serial_t struct */
+    xbee_serial.baudrate = 115200;
+    xbee_serial.huart = &huart4;
 
-    xbee_wpan_init( xbee_dev_t *xbee, const wpan_endpoint_table_entry_t *ep_table); //@todo Implement
+    int xbee_status = xbee_dev_init (&xbee_dev, &xbee_serial, NULL, NULL);
 
+    if(xbee_status == 0)
+    {
+        xbee_status = xbee_wpan_init(&xbee_dev, sample_endpoints);
+    }
+    
+    if(xbee_status != 0)
+    {
+        tx_status = -1;
+        // @todo xbee init error handler
+    }
+    //xbee_disc_add_node_id_handler() @todo Discovery?
     return tx_status;
 }
 
 void xbee_comms_entry(ULONG input)
 {
-    xbee_comms_context_t* publisher_ptr = (xbee_comms_context_t*) input;
+    xbee_comms_context_t* xbee_comms_ptr = (xbee_comms_context_t*) input;
+    pdu_t rx;
 
-    
-    xbee_header_transmit_explicit_t transmit_frame;
-
-    while(1){
-    
+    while(1)
+    {
+        int status;
         //@Todo Payload data queue receive
-
-        //@Todo Create Frame (Transmit Request - 0x10 or 0x11)
-        
+        tx_queue_receive(queue, &rx, TX_WAIT_FOREVER); // @todo Get pointer to queue defined in can_unpack
         //Write Frame (Transmit Request - 0x10 or 0x11)  
-        int xbee_frame_write(xbee_dev_t * xbee,
-                            const void FAR * 	header,
-                            uint16_t 	headerlen,
-                            const void FAR * 	data,
-                            uint16_t 	datalen,
-                            uint16_t 	flags
-        );
+        //Create envelope
+        wpan_envelope_t transmit_envelope;
+
+        wpan_envelope_create(&transmit_envelope, &xbee_dev.wpan_dev, WPAN_IEEE_ADDR_BROADCAST, WPAN_NET_ADDR_UNDEFINED); 
+
+        transmit_envelope.payload = &rx;
+        transmit_envelope.length = sizeof(rx);
+        //Use an explicit transmit frame (type 0x11) with WPAN_ENDPOINT_DIGI_DATA as the source and
+        /// destination endpoint, DIGI_CLUST_SERIAL as the cluster ID and WPAN_PROFILE_DIGI as the profile ID.
+        //Send frame
+        xbee_transparent_serial(&transmit_envelope);
 
         //Check for newly received frames (Transmit Status)
-        xbee_dev_tick (xbee_dev_t *xbee); // @todo Currently based on blocking UART function (see xbee_serial_stm32). Should it be non-blocking interrupt based?
+        do 
+        {
+            wpan_tick(&xbee_dev.wpan_dev); // @todo Do we need this?
+            xbee_dev_tick (&xbee_dev); // @todo Currently based on blocking UART function (see xbee_serial_stm32). Should it be non-blocking interrupt based?
+        } while (status == -EBUSY);        
 
-
-        // Introduce 500ms delay
-        tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
     }
 
     return;
@@ -93,7 +144,7 @@ void transmit_status_handler( xbee_dev_t *xbee,
 
     const xbee_frame_transmit_status_t FAR *payload = frame;
 
-    XBEE_UNUSED_PARAMETER(xbee);
+    XBEE_UNUSED_PARAMETER(xbee_dev);
     XBEE_UNUSED_PARAMETER(length);
     XBEE_UNUSED_PARAMETER(context);
 
