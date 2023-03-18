@@ -245,7 +245,7 @@ void queue_receive_thread_entry(ULONG input)
         /* Send pdu packet through UART */
         HAL_StatusTypeDef uart_ret = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
 
-        /* Payload data queue transmit */
+        /* @todo Create Payload data transmit queue */
 
         if(uart_ret != HAL_OK)
         {
