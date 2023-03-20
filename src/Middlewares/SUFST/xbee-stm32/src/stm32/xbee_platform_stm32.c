@@ -15,10 +15,9 @@
     @file
     Platform support for Freescale KL25 using mbed compiler.
 */
-
-#include "xbee_platform.h"
 #include <tx_api.h>
-#include "usart.h"
+#include "xbee_platform.h"
+
 
 xbee_serial_t Serial;
 

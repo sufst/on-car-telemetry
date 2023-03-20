@@ -7,6 +7,7 @@
 #include "error_handler.h"
 
 #define CAN_PUBLISHER_RX_QUEUE_SIZE 10 //TODO: add config.h storing such values to avoid redefinition.
+#define PDU_TX_QUEUE_SIZE 10
 
 typedef struct {
 
@@ -28,6 +29,10 @@ typedef struct {
 
   rtcan_msg_t* rx_queue_mem[CAN_PUBLISHER_RX_QUEUE_SIZE];
 
+  TX_QUEUE tx_queue;
+
+  pdu_t* tx_queue_mem[PDU_TX_QUEUE_SIZE];
+
   rtcan_handle_t* rtcan;
 
   unpack_stats_t stats;
@@ -37,6 +42,7 @@ typedef struct {
 } unpack_context_t;
 
 UINT unpack_init(unpack_context_t* unpack_ptr, error_handler_context_t* error_handler_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan);
-TX_QUEUE * can_unpack_get_queue_ptr(unpack_context_t* can_unpack_context);
+TX_QUEUE * can_unpack_get_rx_queue_ptr(unpack_context_t* can_unpack_context);
+TX_QUEUE * can_unpack_get_tx_queue_ptr(unpack_context_t* can_unpack_context);
 
 #endif /* CAN_UNPACK_H */

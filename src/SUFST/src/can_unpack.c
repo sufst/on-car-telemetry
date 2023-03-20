@@ -61,7 +61,7 @@ UINT tx_status;
                                TX_NO_TIME_SLICE,
                                TX_AUTO_START);
     }
-    /* Init queue */
+    /* Init rx queue */
     if (tx_status == TX_SUCCESS)
     {
         tx_status = tx_queue_create(&unpack_ptr->rx_queue,
@@ -69,6 +69,16 @@ UINT tx_status;
                     TX_1_ULONG,
                     unpack_ptr->rx_queue_mem,
                     sizeof(unpack_ptr->rx_queue));        
+    }
+
+    /* Init tx queue */
+    if (tx_status == TX_SUCCESS)
+    {
+        tx_status = tx_queue_create(&unpack_ptr->tx_queue,
+                    "Unpack Tx Queue",
+                    TX_1_ULONG,
+                    unpack_ptr->tx_queue_mem,
+                    sizeof(unpack_ptr->tx_queue));        
     }
     /* Init timer */
     if(tx_status == TX_SUCCESS)
@@ -144,6 +154,7 @@ void queue_receive_thread_entry(ULONG input)
     can_handler_t* handlerunpack = NULL;
     rtcan_msg_t* rx_msg_ptr = NULL;
     pdu_t pdu_struct;
+    pdu_t* pdu_struct_ptr = &pdu_struct;
     uint32_t l_timestamp, c_timestamp;
 
     while (1)
@@ -243,13 +254,13 @@ void queue_receive_thread_entry(ULONG input)
         pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
         
         /* Send pdu packet through UART */
-        HAL_StatusTypeDef uart_ret = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
+        //HAL_StatusTypeDef uart_ret = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
+        // Send the data to the queue.
 
-        /* @todo Create Payload data transmit queue */
-
-        if(uart_ret != HAL_OK)
+        ret = tx_queue_send(&unpack_ptr->tx_queue, (pdu_t *) &pdu_struct_ptr, TX_WAIT_FOREVER);
+        if(ret != TX_SUCCESS)
         {
-            /* Do Non-critical error handling here */
+            return;
         }
         else
         {
@@ -298,7 +309,12 @@ void stats_timer_callback(unpack_stats_t* stats)
     tx_mutex_put(&stats->stats_mutex);
 }
 
-TX_QUEUE * can_unpack_get_queue_ptr(unpack_context_t* can_unpack_context)
+TX_QUEUE * can_unpack_get_rx_queue_ptr(unpack_context_t* can_unpack_context)
 {
   return &can_unpack_context->rx_queue;
+}
+
+TX_QUEUE * can_unpack_get_tx_queue_ptr(unpack_context_t* can_unpack_context)
+{
+  return &can_unpack_context->tx_queue;
 }
