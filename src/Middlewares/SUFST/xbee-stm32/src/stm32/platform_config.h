@@ -39,6 +39,7 @@
     #include <stdint.h>
     #include "usart.h"
 
+
     typedef int bool_t;
 
     // inttypes.h for PRIx16, PRIx32, etc. macros
@@ -46,6 +47,7 @@
     
     // the "FAR" modifier is not used
     #define FAR
+    #define BYTE_ORDER      BIG_ENDIAN
 
     typedef struct xbee_serial_t
     {

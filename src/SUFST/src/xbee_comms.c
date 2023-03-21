@@ -123,8 +123,11 @@ void xbee_comms_entry(ULONG input)
     {
         int status;
         //@Todo Payload data queue receive
-        tx_queue_receive(&xbee_comms_ptr->rx_queue, &rx, TX_WAIT_FOREVER);
-
+        status = tx_queue_receive(xbee_comms_ptr->rx_queue, &rx, TX_WAIT_FOREVER);
+        if(status!= TX_SUCCESS)
+        {
+            return;
+        }
         //Write Frame (Transmit Request - 0x10 or 0x11)  
         //Create envelope
         wpan_envelope_t transmit_envelope;

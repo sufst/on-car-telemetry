@@ -84,11 +84,6 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
         ret = unpack_init(&unpack_context, &error_handler_context, byte_pool, &rtcan);
     }
 
-    if(ret == TX_SUCCESS)
-    {
-        ret = xbee_comms_init(&xbee_comms_context, can_unpack_get_tx_queue_ptr, byte_pool);
-    }
-
     /* if debug mode is on, start can_publisher thread here */
     #if CAN_DEBUG_MODE == 1
       if(ret == TX_SUCCESS)
@@ -96,6 +91,11 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
         ret = can_publisher_init(&publisher_context, can_unpack_get_rx_queue_ptr(&unpack_context), byte_pool);
       }
     #endif
+
+    if(ret == TX_SUCCESS)
+    {
+        ret = xbee_comms_init(&xbee_comms_context, can_unpack_get_tx_queue_ptr(&unpack_context), byte_pool);
+    }
 
   /* USER CODE END App_ThreadX_Init */
 
