@@ -1,6 +1,7 @@
 #include <tx_api.h>
 #include "rtcan.h"
 #include "xbee_comms.h"
+#include "usart.h"
 
 /* Include transmit frame API layer */
 #include "xbee_wpan.h"
