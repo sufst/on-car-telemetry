@@ -102,7 +102,7 @@ UINT tx_status;
     /* Error handling - Can Unpack Thread Initialisation failed */
     if(tx_status != TX_SUCCESS)
     {
-        critical_error(&unpack_ptr->thread, CAN_UNPACK_ERROR_INIT, unpack_ptr->error_handler);
+        critical_error(&unpack_ptr->thread, CAN_UNPACK_INIT_ERROR, unpack_ptr->error_handler);
         return tx_status;
     }
     #if CAN_DEBUG_MODE == 0
@@ -115,7 +115,7 @@ UINT tx_status;
             if(can_status != RTCAN_OK)
             {
                 /* Error handling - rtcan_subscribe failed */
-                critical_error(&unpack_ptr->thread, RTCAN_SUBSCRIBE_ERROR_INIT, unpack_ptr->error_handler);
+                critical_error(&unpack_ptr->thread, CAN_UNPACK_RTCAN_INIT_ERROR, unpack_ptr->error_handler);
                 /* Do soft reset? */
                 return tx_status;
             }
@@ -140,7 +140,7 @@ UINT tx_status;
     {
         /* Error handling - rtcan_start failed */
         /* @rureverek: Try reset instead? */
-        critical_error(&unpack_ptr->thread, RTCAN_START_ERROR, unpack_ptr->error_handler);
+        critical_error(&unpack_ptr->thread, CAN_UNPACK_RTCAN_INIT_ERROR, unpack_ptr->error_handler);
         /* Do soft reset? */
     }
 
@@ -168,7 +168,7 @@ void queue_receive_thread_entry(ULONG input)
                                     TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
-            critical_error(&unpack_ptr->thread, CAN_RX_QUEUE_ERROR, unpack_ptr->error_handler);
+            critical_error(&unpack_ptr->thread, CAN_UNPACK_QUEUE_ERROR, unpack_ptr->error_handler);
             return;
         }
 
@@ -176,7 +176,7 @@ void queue_receive_thread_entry(ULONG input)
         ret = tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
-            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+            critical_error(&unpack_ptr->thread, CAN_UNPACK_STATS_MUTEX_ERROR, unpack_ptr->error_handler);
             return;
         }
 
@@ -186,7 +186,7 @@ void queue_receive_thread_entry(ULONG input)
         ret = tx_mutex_put(&unpack_ptr->stats.stats_mutex);
         if (ret != TX_SUCCESS)
         {
-            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+            critical_error(&unpack_ptr->thread, CAN_UNPACK_STATS_MUTEX_ERROR, unpack_ptr->error_handler);
             return;
         }
         
@@ -260,6 +260,7 @@ void queue_receive_thread_entry(ULONG input)
         ret = tx_queue_send(&unpack_ptr->tx_queue, (pdu_t *) &pdu_struct_ptr, TX_WAIT_FOREVER);
         if(ret != TX_SUCCESS)
         {
+            critical_error(&unpack_ptr->thread, CAN_UNPACK_QUEUE_ERROR, unpack_ptr->error_handler);
             return;
         }
         else
@@ -269,7 +270,7 @@ void queue_receive_thread_entry(ULONG input)
             ret = tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
             if (ret != TX_SUCCESS)
             {
-                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+                critical_error(&unpack_ptr->thread, CAN_UNPACK_STATS_MUTEX_ERROR, unpack_ptr->error_handler);
                 return;
             }
             unpack_ptr->stats.tx_pdu_count++;
@@ -278,7 +279,7 @@ void queue_receive_thread_entry(ULONG input)
             ret = tx_mutex_put(&unpack_ptr->stats.stats_mutex);    
             if (ret != TX_SUCCESS)
             {
-                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+                critical_error(&unpack_ptr->thread, CAN_UNPACK_STATS_MUTEX_ERROR, unpack_ptr->error_handler);
                 return;
             }
 

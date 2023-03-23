@@ -2,6 +2,7 @@
 #include "rtcan.h"
 #include "xbee_comms.h"
 #include "usart.h"
+#include "error_handler.h"
 
 /* Include transmit frame API layer */
 #include "xbee/wpan.h"
@@ -67,10 +68,11 @@ static const wpan_endpoint_table_entry_t sample_endpoints[] = {
  *
  * @return		See ThreadX return codes
  */
-UINT xbee_comms_init(xbee_comms_context_t* xbee_comms_ptr, TX_QUEUE* rx_queue, TX_BYTE_POOL* stack_pool_ptr)
+UINT xbee_comms_init(xbee_comms_context_t* xbee_comms_ptr, error_handler_context_t* error_handler_context, TX_QUEUE* rx_queue, TX_BYTE_POOL* stack_pool_ptr)
 {
 
     xbee_comms_ptr->rx_queue = rx_queue;
+    xbee_comms_ptr->error_handler = error_handler_context;
 
     VOID* thread_stack_ptr = NULL;
     int xbee_status;
@@ -102,17 +104,25 @@ UINT xbee_comms_init(xbee_comms_context_t* xbee_comms_ptr, TX_QUEUE* rx_queue, T
 
         xbee_status = xbee_dev_init (&xbee_comms_ptr->xbee_dev, &xbee_comms_ptr->xbee_serial, NULL, NULL);
     }
+    else 
+    {
+        critical_error(&xbee_comms_ptr->thread, XBEE_COMMS_INIT_ERROR, xbee_comms_ptr->error_handler);
+    }
 
     if(xbee_status == 0)
     {
         xbee_status = xbee_wpan_init(&xbee_comms_ptr->xbee_dev, sample_endpoints);
     }
+    else 
+    {
+        critical_error(&xbee_comms_ptr->thread, XBEE_COMMS_INIT_ERROR, xbee_comms_ptr->error_handler);
+    }
     
     if(xbee_status != 0)
     {
-        tx_status = -1;
-        // @todo xbee init error handler
+        critical_error(&xbee_comms_ptr->thread, XBEE_COMMS_INIT_ERROR, xbee_comms_ptr->error_handler);
     }
+
     //xbee_disc_add_node_id_handler() @todo Discovery?
     return tx_status;
 }
@@ -125,13 +135,14 @@ static void xbee_comms_entry(ULONG input)
     while(1)
     {
         int status;
-        //@Todo Payload data queue receive
+
         status = tx_queue_receive(xbee_comms_ptr->rx_queue, &rd_pdu_ptr , TX_WAIT_FOREVER);
         if(status!= TX_SUCCESS)
         {
+            critical_error(&xbee_comms_ptr->thread, XBEE_COMMS_QUEUE_ERROR, xbee_comms_ptr->error_handler);
             return;
         }
-        //Write Frame (Transmit Request - 0x10 or 0x11)  
+ 
         //Create envelope
         wpan_envelope_t transmit_envelope;
 
@@ -141,8 +152,13 @@ static void xbee_comms_entry(ULONG input)
         transmit_envelope.length = sizeof(*rd_pdu_ptr );
         //Use an explicit transmit frame (type 0x11) with WPAN_ENDPOINT_DIGI_DATA as the source and
         /// destination endpoint, DIGI_CLUST_SERIAL as the cluster ID and WPAN_PROFILE_DIGI as the profile ID.
+
         //Send frame
-        xbee_transparent_serial(&transmit_envelope);
+        status = xbee_transparent_serial(&transmit_envelope);
+        if(status != 0)
+        {
+            /* @todo Do non-critical error handling here */
+        }
 
         //Check for newly received frames (Transmit Status)
 

@@ -94,7 +94,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 
     if(ret == TX_SUCCESS)
     {
-        ret = xbee_comms_init(&xbee_comms_context, can_unpack_get_tx_queue_ptr(&unpack_context), byte_pool);
+        ret = xbee_comms_init(&xbee_comms_context, &error_handler_context, can_unpack_get_tx_queue_ptr(&unpack_context), byte_pool);
     }
 
   /* USER CODE END App_ThreadX_Init */
