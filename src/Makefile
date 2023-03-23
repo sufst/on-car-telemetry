@@ -241,59 +241,59 @@ Middlewares/ST/threadx/common/src/tx_trace_isr_exit_insert.c \
 Middlewares/ST/threadx/common/src/tx_trace_object_register.c \
 Middlewares/ST/threadx/common/src/tx_trace_object_unregister.c \
 Middlewares/ST/threadx/common/src/tx_trace_user_event_insert.c  \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_atcmd.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_atmode.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_cbuf.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_delivery_status.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_device.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_discovery.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_ebl_file.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_ext_modem_status.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_file_system.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_firmware.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_gpm.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_io.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_register_device.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_reg_descr.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_route.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_scan.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_secure_session.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_sxa.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_time.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_transparent_serial.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_user_data.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_wpan.c \
-Middlewares/SUFST/xbee-stm32/src/xbee/xbee_xmodem.c \
-Middlewares/SUFST/xbee-stm32/src/zigbee/zcl_basic.c \
-Middlewares/SUFST/xbee-stm32/src/zigbee/zcl_client.c \
-Middlewares/SUFST/xbee-stm32/src/zigbee/zcl_identify.c \
-Middlewares/SUFST/xbee-stm32/src/zigbee/zcl_onoff.c \
-Middlewares/SUFST/xbee-stm32/src/zigbee/zcl_time.c \
-Middlewares/SUFST/xbee-stm32/src/zigbee/zcl_types.c \
-Middlewares/SUFST/xbee-stm32/src/zigbee/zigbee_zcl.c \
-Middlewares/SUFST/xbee-stm32/src/zigbee/zigbee_zdo.c \
-Middlewares/SUFST/xbee-stm32/src/wpan/wpan_aps.c \
-Middlewares/SUFST/xbee-stm32/src/wpan/wpan_types.c \
-Middlewares/SUFST/xbee-stm32/src/stm32/xbee_platform_stm32.c \
-Middlewares/SUFST/xbee-stm32/src/stm32/xbee_serial_stm32.c \
-Middlewares/SUFST/xbee-stm32/src/util/hexdump.c \
-Middlewares/SUFST/xbee-stm32/src/util/hexstrtobyte.c \
-Middlewares/SUFST/xbee-stm32/src/util/jslong.c \
-Middlewares/SUFST/xbee-stm32/src/util/memcheck.c \
-Middlewares/SUFST/xbee-stm32/src/util/swapbytes.c \
-Middlewares/SUFST/xbee-stm32/src/util/swapcpy.c \
-Middlewares/SUFST/xbee-stm32/src/util/xmodem_crc16.c
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_atcmd.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_atmode.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_cbuf.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_delivery_status.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_device.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_discovery.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_ebl_file.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_ext_modem_status.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_file_system.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_firmware.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_gpm.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_io.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_register_device.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_reg_descr.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_route.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_scan.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_secure_session.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_sxa.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_time.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_transparent_serial.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_user_data.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_wpan.c \
+Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_xmodem.c \
+Middlewares/SUFST/xbee_ansic_library/src/zigbee/zcl_basic.c \
+Middlewares/SUFST/xbee_ansic_library/src/zigbee/zcl_client.c \
+Middlewares/SUFST/xbee_ansic_library/src/zigbee/zcl_identify.c \
+Middlewares/SUFST/xbee_ansic_library/src/zigbee/zcl_onoff.c \
+Middlewares/SUFST/xbee_ansic_library/src/zigbee/zcl_time.c \
+Middlewares/SUFST/xbee_ansic_library/src/zigbee/zcl_types.c \
+Middlewares/SUFST/xbee_ansic_library/src/zigbee/zigbee_zcl.c \
+Middlewares/SUFST/xbee_ansic_library/src/zigbee/zigbee_zdo.c \
+Middlewares/SUFST/xbee_ansic_library/src/wpan/wpan_aps.c \
+Middlewares/SUFST/xbee_ansic_library/src/wpan/wpan_types.c \
+Middlewares/SUFST/xbee_ansic_library/ports/stm32/xbee_platform_stm32.c \
+Middlewares/SUFST/xbee_ansic_library/ports/stm32/xbee_serial_stm32.c \
+Middlewares/SUFST/xbee_ansic_library/src/util/hexdump.c \
+Middlewares/SUFST/xbee_ansic_library/src/util/hexstrtobyte.c \
+Middlewares/SUFST/xbee_ansic_library/src/util/jslong.c \
+Middlewares/SUFST/xbee_ansic_library/src/util/memcheck.c \
+Middlewares/SUFST/xbee_ansic_library/src/util/swapbytes.c \
+Middlewares/SUFST/xbee_ansic_library/src/util/swapcpy.c \
+Middlewares/SUFST/xbee_ansic_library/src/util/xmodem_crc16.c
 
-# Middlewares/SUFST/xbee-stm32/src/xbee/xbee_socket_frames.c
-# Middlewares/SUFST/xbee-stm32/src/util/crc16buypass.c
-# Middlewares/SUFST/xbee-stm32/src/xbee/xbee_bl_gen3.c
-# Middlewares/SUFST/xbee-stm32/src/xbee/xbee_ipv4.c
-# Middlewares/SUFST/xbee-stm32/src/xbee/xbee_sms.c
-# Middlewares/SUFST/xbee-stm32/src/xbee/xbee_wifi.c
-# Middlewares/SUFST/xbee-stm32/src/xbee/xbee_socket.c
-# Middlewares/SUFST/xbee-stm32/src/xbee/xbee_tx_status.c
-# Middlewares/SUFST/xbee-stm32/src/util/srp.c
-# Middlewares/SUFST/xbee-stm32/src/util/xbee_random_mbedtls.c
+# Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_socket_frames.c
+# Middlewares/SUFST/xbee_ansic_library/src/util/crc16buypass.c
+# Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_bl_gen3.c
+# Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_ipv4.c
+# Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_sms.c
+# Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_wifi.c
+# Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_socket.c
+# Middlewares/SUFST/xbee_ansic_library/src/xbee/xbee_tx_status.c
+# Middlewares/SUFST/xbee_ansic_library/src/util/srp.c
+# Middlewares/SUFST/xbee_ansic_library/src/util/xbee_random_mbedtls.c
 # ASM sources
 ASM_SOURCES =  \
 startup_stm32f446xx.s \
@@ -350,7 +350,8 @@ AS_DEFS =
 C_DEFS =  \
 -DTX_INCLUDE_USER_DEFINE_FILE \
 -DUSE_HAL_DRIVER \
--DSTM32F446xx
+-DSTM32F446xx \
+-DXBEE_PLATFORM_HEADER='"../ports/stm32/platform_config.h"'
 
 
 # AS includes
@@ -370,11 +371,13 @@ C_INCLUDES =  \
 -IMiddlewares/ST/threadx/common/inc/ \
 -IMiddlewares/ST/threadx/ports/cortex_m4/gnu/inc/ \
 -IMiddlewares/SUFST/rtcan/inc \
--IMiddlewares/SUFST/xbee-stm32/include/xbee \
--IMiddlewares/SUFST/xbee-stm32/include/wpan \
--IMiddlewares/SUFST/xbee-stm32/include/zigbee \
--IMiddlewares/SUFST/xbee-stm32/include/util \
--IMiddlewares/SUFST/xbee-stm32/src/stm32
+-IMiddlewares/SUFST/xbee_ansic_library/include
+
+# -IMiddlewares/SUFST/xbee_ansic_library/include/xbee \
+# -IMiddlewares/SUFST/xbee_ansic_library/include/wpan \
+# -IMiddlewares/SUFST/xbee_ansic_library/include/zigbee \
+# -IMiddlewares/SUFST/xbee_ansic_library/include/util \
+# -IMiddlewares/SUFST/xbee_ansic_library/src/stm32
 
 
 # compile gcc flags

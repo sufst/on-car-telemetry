@@ -4,10 +4,10 @@
 #include "usart.h"
 
 /* Include transmit frame API layer */
-#include "xbee_wpan.h"
-#include "xbee_device.h"
-#include "wpan_aps.h"
-#include "xbee_delivery_status.h"
+#include "xbee/wpan.h"
+#include "xbee/device.h"
+#include "wpan/aps.h"
+#include "xbee/delivery_status.h"
 
 
 #define QUEUE_SEND_THREAD_PRIORITY             10

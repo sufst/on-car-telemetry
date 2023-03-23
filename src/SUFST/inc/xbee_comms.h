@@ -2,12 +2,12 @@
 #ifndef XBEE_COMMS_H
 #define XBEE_COMMS_H
 #include <tx_api.h>
-#include "xbee_device.h"
-#include "xbee_wpan.h"
+#include "xbee/device.h""
+#include "xbee/wpan.h"
 #include "telemetry_protocol.h"
-#include "xbee_discovery.h"
-#include "zigbee_zdo.h"
-#include "xbee_transparent_serial.h"
+#include "xbee/discovery.h"
+#include "zigbee/zdo.h"
+#include "xbee/transparent_serial.h"
 
 typedef struct {
 
