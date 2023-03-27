@@ -15,6 +15,6 @@
  * 1 - Debug Mode - can_unpack thread gets simulated data from testbench
  *  
  */
-#define CAN_DEBUG_MODE 1
+#define CAN_DEBUG_MODE 0
 
 #endif /* CONFIG_H */

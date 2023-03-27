@@ -248,10 +248,10 @@ void queue_receive_thread_entry(ULONG input)
             /* TODO: Non Critical error handling */
         }
         #endif
-        pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
+        pdu_struct.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
         pdu_struct.ID = handlerunpack->pdu_id; /* Assign PDU ID */
-        pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
+        pdu_struct.valid_bitfield = 0xff; /* Assign Valid_bitfield */
         
         /* Send pdu packet through UART */
         //HAL_StatusTypeDef uart_ret = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
