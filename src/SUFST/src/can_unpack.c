@@ -61,7 +61,7 @@ UINT tx_status;
                                TX_NO_TIME_SLICE,
                                TX_AUTO_START);
     }
-    /* Init queue */
+    /* Init rx queue */
     if (tx_status == TX_SUCCESS)
     {
         tx_status = tx_queue_create(&unpack_ptr->rx_queue,
@@ -69,6 +69,16 @@ UINT tx_status;
                     TX_1_ULONG,
                     unpack_ptr->rx_queue_mem,
                     sizeof(unpack_ptr->rx_queue));        
+    }
+
+    /* Init tx queue */
+    if (tx_status == TX_SUCCESS)
+    {
+        tx_status = tx_queue_create(&unpack_ptr->tx_queue,
+                    "Unpack Tx Queue",
+                    TX_1_ULONG,
+                    unpack_ptr->tx_queue_mem,
+                    sizeof(unpack_ptr->tx_queue));        
     }
     /* Init timer */
     if(tx_status == TX_SUCCESS)
@@ -92,7 +102,7 @@ UINT tx_status;
     /* Error handling - Can Unpack Thread Initialisation failed */
     if(tx_status != TX_SUCCESS)
     {
-        critical_error(&unpack_ptr->thread, CAN_UNPACK_ERROR_INIT, unpack_ptr->error_handler);
+        critical_error(&unpack_ptr->thread, CAN_UNPACK_INIT_ERROR, unpack_ptr->error_handler);
         return tx_status;
     }
     #if CAN_DEBUG_MODE == 0
@@ -105,7 +115,7 @@ UINT tx_status;
             if(can_status != RTCAN_OK)
             {
                 /* Error handling - rtcan_subscribe failed */
-                critical_error(&unpack_ptr->thread, RTCAN_SUBSCRIBE_ERROR_INIT, unpack_ptr->error_handler);
+                critical_error(&unpack_ptr->thread, CAN_UNPACK_RTCAN_INIT_ERROR, unpack_ptr->error_handler);
                 /* Do soft reset? */
                 return tx_status;
             }
@@ -130,7 +140,7 @@ UINT tx_status;
     {
         /* Error handling - rtcan_start failed */
         /* @rureverek: Try reset instead? */
-        critical_error(&unpack_ptr->thread, RTCAN_START_ERROR, unpack_ptr->error_handler);
+        critical_error(&unpack_ptr->thread, CAN_UNPACK_RTCAN_INIT_ERROR, unpack_ptr->error_handler);
         /* Do soft reset? */
     }
 
@@ -144,6 +154,7 @@ void queue_receive_thread_entry(ULONG input)
     can_handler_t* handlerunpack = NULL;
     rtcan_msg_t* rx_msg_ptr = NULL;
     pdu_t pdu_struct;
+    pdu_t* pdu_struct_ptr = &pdu_struct;
     uint32_t l_timestamp, c_timestamp;
 
     while (1)
@@ -157,7 +168,7 @@ void queue_receive_thread_entry(ULONG input)
                                     TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
-            critical_error(&unpack_ptr->thread, CAN_RX_QUEUE_ERROR, unpack_ptr->error_handler);
+            critical_error(&unpack_ptr->thread, CAN_UNPACK_QUEUE_ERROR, unpack_ptr->error_handler);
             return;
         }
 
@@ -165,7 +176,7 @@ void queue_receive_thread_entry(ULONG input)
         ret = tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
         if (ret != TX_SUCCESS)
         {
-            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+            critical_error(&unpack_ptr->thread, CAN_UNPACK_STATS_MUTEX_ERROR, unpack_ptr->error_handler);
             return;
         }
 
@@ -175,7 +186,7 @@ void queue_receive_thread_entry(ULONG input)
         ret = tx_mutex_put(&unpack_ptr->stats.stats_mutex);
         if (ret != TX_SUCCESS)
         {
-            critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+            critical_error(&unpack_ptr->thread, CAN_UNPACK_STATS_MUTEX_ERROR, unpack_ptr->error_handler);
             return;
         }
         
@@ -237,17 +248,20 @@ void queue_receive_thread_entry(ULONG input)
             /* TODO: Non Critical error handling */
         }
         #endif
-        pdu_struct.header.epoch = c_timestamp; /* Assign timestamp */
+        pdu_struct.epoch = c_timestamp; /* Assign timestamp */
         pdu_struct.start_byte = 1; /* Assign start byte */
         pdu_struct.ID = handlerunpack->pdu_id; /* Assign PDU ID */
-        pdu_struct.header.valid_bitfield = 1; /* Assign Valid_bitfield */
+        pdu_struct.valid_bitfield = 0xff; /* Assign Valid_bitfield */
         
         /* Send pdu packet through UART */
-        HAL_StatusTypeDef uart_ret = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
+        //HAL_StatusTypeDef uart_ret = HAL_UART_Transmit(&huart4, (uint8_t *) &pdu_struct, sizeof(pdu_t), 10);
+        // Send the data to the queue.
 
-        if(uart_ret != HAL_OK)
+        ret = tx_queue_send(&unpack_ptr->tx_queue, (pdu_t *) &pdu_struct_ptr, TX_WAIT_FOREVER);
+        if(ret != TX_SUCCESS)
         {
-            /* Do Non-critical error handling here */
+            critical_error(&unpack_ptr->thread, CAN_UNPACK_QUEUE_ERROR, unpack_ptr->error_handler);
+            return;
         }
         else
         {
@@ -256,7 +270,7 @@ void queue_receive_thread_entry(ULONG input)
             ret = tx_mutex_get(&unpack_ptr->stats.stats_mutex,TX_WAIT_FOREVER);
             if (ret != TX_SUCCESS)
             {
-                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+                critical_error(&unpack_ptr->thread, CAN_UNPACK_STATS_MUTEX_ERROR, unpack_ptr->error_handler);
                 return;
             }
             unpack_ptr->stats.tx_pdu_count++;
@@ -265,7 +279,7 @@ void queue_receive_thread_entry(ULONG input)
             ret = tx_mutex_put(&unpack_ptr->stats.stats_mutex);    
             if (ret != TX_SUCCESS)
             {
-                critical_error(&unpack_ptr->thread, STATS_MUTEX_ERROR, unpack_ptr->error_handler);
+                critical_error(&unpack_ptr->thread, CAN_UNPACK_STATS_MUTEX_ERROR, unpack_ptr->error_handler);
                 return;
             }
 
@@ -296,7 +310,12 @@ void stats_timer_callback(unpack_stats_t* stats)
     tx_mutex_put(&stats->stats_mutex);
 }
 
-TX_QUEUE * can_unpack_get_queue_ptr(unpack_context_t* can_unpack_context)
+TX_QUEUE * can_unpack_get_rx_queue_ptr(unpack_context_t* can_unpack_context)
 {
   return &can_unpack_context->rx_queue;
+}
+
+TX_QUEUE * can_unpack_get_tx_queue_ptr(unpack_context_t* can_unpack_context)
+{
+  return &can_unpack_context->tx_queue;
 }

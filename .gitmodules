@@ -4,3 +4,6 @@
 [submodule "src/Middlewares/SUFST/rtcan"]
 	path = src/Middlewares/SUFST/rtcan
 	url = https://github.com/sufst/rtcan
+[submodule "src/Middlewares/SUFST/xbee_ansic_library"]
+	path = src/Middlewares/SUFST/xbee_ansic_library
+	url = https://github.com/sufst/xbee_ansic_library

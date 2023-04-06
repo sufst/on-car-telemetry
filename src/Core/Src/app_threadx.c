@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "can_unpack.h"
 #include "error_handler.h"
+#include "xbee_comms.h"
 #include "can.h"
 #include "config.h"
 #if CAN_DEBUG_MODE == 1
@@ -52,6 +53,7 @@
 static unpack_context_t unpack_context;
 static error_handler_context_t error_handler_context;
 static rtcan_handle_t rtcan;
+static xbee_comms_context_t xbee_comms_context;
 #if CAN_DEBUG_MODE == 1
   static publisher_context_t publisher_context;
 #endif
@@ -81,14 +83,19 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     {
         ret = unpack_init(&unpack_context, &error_handler_context, byte_pool, &rtcan);
     }
-    
+
     /* if debug mode is on, start can_publisher thread here */
     #if CAN_DEBUG_MODE == 1
       if(ret == TX_SUCCESS)
       {
-        ret = can_publisher_init(&publisher_context, can_unpack_get_queue_ptr(&unpack_context), byte_pool);
+        ret = can_publisher_init(&publisher_context, can_unpack_get_rx_queue_ptr(&unpack_context), byte_pool);
       }
     #endif
+
+    if(ret == TX_SUCCESS)
+    {
+        ret = xbee_comms_init(&xbee_comms_context, &error_handler_context, can_unpack_get_tx_queue_ptr(&unpack_context), byte_pool);
+    }
 
   /* USER CODE END App_ThreadX_Init */
 

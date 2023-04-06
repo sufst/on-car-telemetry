@@ -37,8 +37,9 @@ typedef struct
     /**
      * @brief   Message data header
      */
-    header_t header;
-
+//    header_t header;
+    uint16_t valid_bitfield;
+    unsigned int    epoch;
     /**
      * @brief   Message data buffer
      */

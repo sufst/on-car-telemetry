@@ -7,7 +7,20 @@
         "stdint.h": "c",
         "tx_api.h": "c",
         "main.h": "c",
-        "stdatomic.h": "c"
+        "stdatomic.h": "c",
+        "wpan_aps.h": "c",
+        "xbee_wpan.h": "c",
+        "xbee_device.h": "c",
+        "xbee_tx_status.h": "c",
+        "xbee_transparent_serial.h": "c",
+        "xbee_delivery_status.h": "c",
+        "wpan_types.h": "c",
+        "zigbee_zdo.h": "c",
+        "error_handler.h": "c",
+        "xbee_platform.h": "c",
+        "rtcan.h": "c",
+        "xbee_comms.h": "c",
+        "errno.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

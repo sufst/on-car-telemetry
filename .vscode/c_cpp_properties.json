@@ -3,7 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/src/Middlewares/SUFST/xbee_ansic_library/include"
             ],
             "defines": [
                 "_DEBUG",

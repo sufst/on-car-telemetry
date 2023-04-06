@@ -64,19 +64,22 @@ static void error_handler_thread_entry(ULONG input)
 
         switch (error_handler_ptr->error_code)
         {
-        case CAN_UNPACK_ERROR_INIT:
+        case CAN_UNPACK_INIT_ERROR:
             break;
 
-        case RTCAN_START_ERROR:
+        case CAN_UNPACK_QUEUE_ERROR:
             break;
 
-        case RTCAN_SUBSCRIBE_ERROR_INIT:
+        case CAN_UNPACK_RTCAN_INIT_ERROR:
             break;
         
-        case STATS_MUTEX_ERROR:
+        case CAN_UNPACK_STATS_MUTEX_ERROR:
             break;
 
-        case CAN_RX_QUEUE_ERROR:
+        case XBEE_COMMS_INIT_ERROR:
+            break;
+
+        case XBEE_COMMS_QUEUE_ERROR:
             break;
 
         default:
