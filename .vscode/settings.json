@@ -20,7 +20,8 @@
         "xbee_platform.h": "c",
         "rtcan.h": "c",
         "xbee_comms.h": "c",
-        "errno.h": "c"
+        "errno.h": "c",
+        "gps_comms.h": "c"
     },
     "cortex-debug.variableUseNaturalFormat": false
 }

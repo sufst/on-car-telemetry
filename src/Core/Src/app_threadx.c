@@ -26,6 +26,7 @@
 #include "can_unpack.h"
 #include "error_handler.h"
 #include "xbee_comms.h"
+#include "gps_comms.h"
 #include "can.h"
 #include "config.h"
 #if CAN_DEBUG_MODE == 1
@@ -54,6 +55,7 @@ static unpack_context_t unpack_context;
 static error_handler_context_t error_handler_context;
 static rtcan_handle_t rtcan;
 static xbee_comms_context_t xbee_comms_context;
+static gps_comms_context_t gps_comms_context;
 #if CAN_DEBUG_MODE == 1
   static publisher_context_t publisher_context;
 #endif
@@ -95,6 +97,11 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     if(ret == TX_SUCCESS)
     {
         ret = xbee_comms_init(&xbee_comms_context, &error_handler_context, can_unpack_get_tx_queue_ptr(&unpack_context), byte_pool);
+    }
+
+    if(ret == TX_SUCCESS)
+    {
+        ret = gps_comms_init(&gps_comms_context, &error_handler_context, byte_pool, &rtcan);
     }
 
   /* USER CODE END App_ThreadX_Init */

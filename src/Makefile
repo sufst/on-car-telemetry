@@ -40,6 +40,7 @@ Middlewares/SUFST/rtcan/src/rtcan.c \
 Middlewares/SUFST/can-defs/out/can_database.c \
 Middlewares/SUFST/can-defs/out/can_handlers.c \
 SUFST/src/can_unpack.c \
+SUFST/src/gps_comms.c \
 SUFST/src/can_publisher.c\
 SUFST/src/error_handler.c \
 SUFST/src/Debug/testbench_can_data.c\
