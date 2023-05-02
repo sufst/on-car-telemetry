@@ -53,11 +53,18 @@ UINT gps_comms_init(gps_comms_context_t* gps_comms_ptr, error_handler_context_t*
 void gps_comms_entry(ULONG input)
 {
     gps_comms_context_t* gps_comms_ptr = (gps_comms_context_t *) input;
+    rtcan_msg_t msg;
 
     while (1)
     {
-        /* Main GPS Loop */
+        /*** Main GPS Loop ***/
 
+        /* 1. Get data from GPS */
 
+        /* 2. Pack data into CAN message */
+
+        /* 3. Send data into CAN-S */ 
+        
+        rtcan_transmit(gps_comms_ptr->rtcan, &msg);
     }
 }
