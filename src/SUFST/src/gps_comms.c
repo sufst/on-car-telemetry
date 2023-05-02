@@ -12,10 +12,9 @@ static void gps_comms_entry(ULONG input);
 
 UINT gps_comms_init(gps_comms_context_t* gps_comms_ptr, error_handler_context_t* error_handler_context, TX_BYTE_POOL* stack_pool_ptr, rtcan_handle_t* rtcan){
 
+    VOID* thread_stack_ptr = NULL;
 
-VOID* thread_stack_ptr = NULL;
-
-UINT tx_status;
+    UINT tx_status;
 
     gps_comms_ptr->error_handler = error_handler_context;
 
@@ -41,7 +40,7 @@ UINT tx_status;
                                TX_AUTO_START);
     }
 
-    /* Error handling - Can Unpack Thread Initialisation failed */
+    /* Error handling - GPS Comms Thread Initialisation failed */
     if(tx_status != TX_SUCCESS)
     {
         critical_error(&gps_comms_ptr->thread, GPS_COMMS_INIT_ERROR, gps_comms_ptr->error_handler);
