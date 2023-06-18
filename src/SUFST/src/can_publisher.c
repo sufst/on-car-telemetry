@@ -1,7 +1,8 @@
 #include <tx_api.h>
 #include "rtcan.h"
 #include "can_publisher.h"
-#include "can_database.h"
+#include "can_s.h"
+#include "can_c.h"
 #include "Debug/testbench_can_data.h"
 #include "error_handler.h"
 
@@ -58,8 +59,8 @@ void queue_send_thread_entry(ULONG input)
 
     while(1){
     
-    queue_data.identifier = CAN_DATABASE_PM100_CURRENT_INFO_FRAME_ID;
-    queue_data.length = CAN_DATABASE_PM100_CURRENT_INFO_LENGTH;
+    queue_data.identifier = CAN_C_PM100_CURRENT_INFO_FRAME_ID;
+    queue_data.length = CAN_C_PM100_CURRENT_INFO_LENGTH;
 
     memcpy(&queue_data.data, testbench_can_get_data_ptr(i), sizeof(uint8_t)*DEBUG_LOOKUP_DATA_CELL_SIZE);
 

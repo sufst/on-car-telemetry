@@ -37,7 +37,8 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Middlewares/SUFST/rtcan/src/rtcan.c \
-Middlewares/SUFST/can-defs/out/can_database.c \
+Middlewares/SUFST/can-defs/out/can_c.c \
+Middlewares/SUFST/can-defs/out/can_s.c \
 Middlewares/SUFST/can-defs/out/can_handlers.c \
 SUFST/src/can_unpack.c \
 SUFST/src/can_publisher.c\
