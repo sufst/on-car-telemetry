@@ -4,16 +4,29 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/src/Middlewares/SUFST/xbee_ansic_library/include"
+                "${workspaceFolder}/src/Drivers/CMSIS/Include",
+                "${workspaceFolder}/src/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
+                "${workspaceFolder}/src/Drivers/STM32F4xx_HAL_Driver/Inc",
+                "${workspaceFolder}/src/Core/Inc",
+                "${workspaceFolder}/src/Middlewares/SUFST/**",
+                "${workspaceFolder}/src/SUFST/inc",
+                "${workspaceFolder}/src/Drivers/CMSIS/**",
+                "${workspaceFolder}/src/Middlewares/ST/threadx/common/inc",
+                "${workspaceFolder}/src/Middlewares/ST/threadx/ports/cortex_m4/gnu/inc",
+                "${workspaceFolder}/src/Middlewares/SUFST/xbee_ansic_library/include",
+                "${workspaceFolder}/src/Middlewares/SUFST/rtcan/inc",
+                "${workspaceFolder}/src/Middlewares/SUFST/can-defs/out"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "STM32F446xx"
             ],
-            "cStandard": "c17",
-            "cppStandard": "c++17",
-            "intelliSenseMode": "windows-msvc-x64"
+            "compilerPath": "C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe",
+            "cStandard": "gnu11",
+            "intelliSenseMode": "gcc-arm",
+            "configurationProvider": "ms-vscode.makefile-tools"
         }
     ],
     "version": 4
